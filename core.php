@@ -24,5 +24,5 @@ class bot
 }
 
 print_r(
-    bot::sendMessage('5823183588','می گم بیا پایین')
+    bot::sendMessage($chatid,$text)
 );
