@@ -10,9 +10,12 @@ class DB
 
     private static $query;
 
-    public static function setConnection($connection)
+    private $data = [];
+
+    public function __construct()
     {
-        self::$connection = $connection;
+        $database         = new Database();
+        self::$connection = $database->getConnection();
     }
 
     public static function Table($table)
@@ -20,7 +23,7 @@ class DB
         self::$table = $table;
         self::$query = '';
 
-        return new self;
+        return new self();
     }
 
     public function where($column, $value)
@@ -66,6 +69,37 @@ class DB
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function __set($name, $value)
+    {
+        $this->data[$name] = $value;
+    }
+
+    public function save($id = null)
+    {
+        if (empty($id)) {
+            $columns      = implode(', ', array_keys($this->data));
+            $placeholders = implode(', ', array_fill(0, count($this->data), '?'));
+            $values       = array_values($this->data);
+            $sql          = 'INSERT INTO '.self::$table." ($columns) VALUES ($placeholders)";
+            $stmt         = self::$connection->prepare($sql);
+            $stmt->execute($values);
+        }if (is_int($id)) {
+            $set = '';
+            foreach ($this->data as $column => $value) {
+                $set .= "$column = :$column, ";
+            }
+            $set  = rtrim($set, ', ');
+            $sql  = 'UPDATE '.self::$table." SET $set WHERE id = :id";
+            $stmt = self::$connection->prepare($sql);
+            foreach ($this->data as $column => $value) {
+                $stmt->bindValue(":$column", $value);
+            }
+            $stmt->bindValue(':id', $id);
+
+            return $stmt->execute();
+        }
+    }
+
     public function count()
     {
         $stmt = self::$connection->prepare('SELECT COUNT(*) FROM '.self::$table.self::$query);
@@ -93,9 +127,9 @@ class DB
     public function insert($data)
     {
         if (is_array($data)) {
-            $columns = implode(', ', array_keys($data));
+            $columns      = implode(', ', array_keys($data));
             $placeholders = ':'.implode(', :', array_keys($data));
-            $stmt = self::$connection->prepare('INSERT INTO '.self::$table." ($columns) VALUES ($placeholders)");
+            $stmt         = self::$connection->prepare('INSERT INTO '.self::$table." ($columns) VALUES ($placeholders)");
             foreach ($data as $key => $value) {
                 $stmt->bindValue(":$key", $value);
             }
@@ -115,7 +149,7 @@ class DB
         foreach ($data as $column => $value) {
             $set .= "$column = :$column, ";
         }
-        $set = rtrim($set, ', ');
+        $set  = rtrim($set, ', ');
         $stmt = self::$connection->prepare('UPDATE '.self::$table." SET $set WHERE id = :id");
         foreach ($data as $column => $value) {
             $stmt->bindValue(":$column", $value);
@@ -141,9 +175,3 @@ class DB
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
-
-$database = new Database;
-$db = $database->getConnection();
-
-// Set connection for the User class
-DB::setConnection($db);
