@@ -3,10 +3,10 @@
 error_reporting(E_ALL); // Report all PHP errors
 ini_set('display_errors', 1); // Display errors on screen
 
-require 'ORM/ORM.php';
-require 'http.php';
 $BOT_TOKEN = '6877437458:AAE4VKHXOYegB7e4ylsbMfmzqprICompWWU';
 define('api', 'https://api.telegram.org/bot'.$BOT_TOKEN.'/');
+require 'ORM/ORM.php';
+require 'http.php';
 
 class bot
 {
@@ -18,7 +18,7 @@ class bot
             'reply_to_message_id' => $reply_to_message_id,
         ];
 
-        return http(api.'sendMessage', $data_received);
+        return http('sendMessage', $data_received);
     }
 
     public static function forwardMessage($chat_id, $from_chat_id, $message_id)
@@ -29,7 +29,7 @@ class bot
             'message_id'   => $message_id,
         ];
 
-        return http(api.'forwardMessage', $forwardmsg);
+        return http('forwardMessage', $forwardmsg);
     }
 
     public static function copyMessage($chat_id, $from_chat_id, $message_id)
@@ -39,15 +39,28 @@ class bot
             'from_chat_id' => $from_chat_id,
             'message_id'   => $message_id,
         ];
-        return http(api.'copyMessage', $copymsg);
+
+        return http('copyMessage', $copymsg);
     }
 
     public static function deleteMessage($chat_id, $message_id)
     {
         $deletemsg = [
-            'chat_id'      => $chat_id,
-            'message_id'   => $message_id,
+            'chat_id'    => $chat_id,
+            'message_id' => $message_id,
         ];
-        return http(api.'deleteMessage', $deletemsg);
+
+        return http('deleteMessage', $deletemsg);
     }
 }
+
+// Read the raw POST data
+$data = json_decode(file_get_contents('php://input'));
+
+$text       = $data->message->text;
+$chat_id    = $data->message->chat->id;
+$from_id    = $data->message->from->id;
+$date       = $data->message->date;
+$message_id = $data->message->message_id;
+
+bot::sendMessage($chat_id, $text, $message_id);

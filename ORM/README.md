@@ -85,7 +85,7 @@ $updateData = [
     'email' => 'john.smith@example.com'];
     
 DB::Table('users')
-    ->update(1, $updateData); // 1 is id
+    ->update(1, ['name' => $updateDataSingle]); // 1 is id and where is with array ->update(['name' => 'second'], ['name' => $updateDataSingle]);
 ```
 
 - Update data with model instance eloquent
@@ -94,13 +94,13 @@ $data        = DB::Table('users');
 $data->user  = 'first';
 $data->name  = 'second';
 $data->email = 'third';
-$data->save(1); // 1 is id
+$data->save(1); // 1 is id and where is with array $data->save('name' => 'Jane Doe'); 
 ```
 
 - Delete data
 ```bash
 DB::Table('users')
-    ->delete(1); // 1 is id
+    ->delete(1); // 1 is id and where is with array ->delete(['name' => 'Jane Doe']);
 ```
 
 - Run a custom SQL query

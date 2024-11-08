@@ -64,23 +64,19 @@ $updateData = [
     'name'  => 'John Smith',
     'email' => 'john.smith@example.com'];
 DB::Table('users')
-    ->update(1, $updateData);
-
-echo 'Update data with single value<br>';
-$updateDataSingle = 'Jane Smith';
-DB::Table('users')
-    ->update(2, ['name' => $updateDataSingle]);
+    ->update(1, $updateData); // 1 is id and where is with array
+// ->update(['name' => 'Jane Doe'], $updateData);
 
 echo 'Update data with model instance eloquent<br>';
 $data        = DB::Table('users');
 $data->user  = 'first';
 $data->name  = 'second';
 $data->email = 'third';
-$data->save(1);
+$data->save(1); // 1 is id and where is with array $data->save('name' => 'Jane.Doe');
 
 echo 'Delete data<br>';
 DB::Table('users')
-    ->delete(1);
+    ->delete(1); // 1 is id and where is with array ->delete(['name' => 'ddd']);
 
 echo 'Run a custom SQL query<br>';
 $customQueryResults = DB::Table('users')

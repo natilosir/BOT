@@ -1,0 +1,436 @@
+
+<center><span style="font-size:40px">ثبت نمرات هفتم (ث)</span></center><title>ثبت نمرات هفتم (ب)</title>
+<link rel="stylesheet" type="text/css" href="../rashtemplate/rezajps/styledoc.css?o">
+<script src="https://dl.natilos.ir/pf/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+    $("input").keydown(function(event) {
+        let currentInput = $(this);
+        let currentRow = currentInput.closest('tr');
+        let currentColumn = currentInput.closest('td');
+
+        switch (event.keyCode) {
+            case 9: // Tab
+                event.preventDefault();
+                let nextInput = currentColumn.next().find('input');
+                if (nextInput.length === 0) {
+                    nextInput = currentRow.next().find('td:first-child input');
+                }
+                nextInput.focus();
+                break;
+            case 38: // Up arrow
+                let prevInput = currentRow.prev().find(currentColumn).find('input');
+                if (prevInput.length > 0) {
+                    prevInput.focus();
+                }
+                break;
+            case 40: // Down arrow
+                let nextInputDown = currentRow.next().find(currentColumn).find('input');
+                if (nextInputDown.length > 0) {
+                    nextInputDown.focus();
+                }
+                break;
+            case 37: // Left arrow
+                let prevInputLeft = currentColumn.prev().find('input');
+                if (prevInputLeft.length > 0) {
+                    prevInputLeft.focus();
+                }
+                break;
+            case 39: // Right arrow
+                let nextInputRight = currentColumn.next().find('input');
+                if (nextInputRight.length > 0) {
+                    nextInputRight.focus();
+                }
+                break;
+        }
+    });
+});
+</script>
+
+<body>
+<div dir=rtl>
+<center><!-- IF List -->
+<table class="jp-tbl" border="0" bordercolor="#425e6c" cellpadding="3" cellspacing="5" width="98%">
+<tbody><tr>
+
+<td bgcolor="#d1dde0" height="26"width="100"><b>نام</b></td>
+<td bgcolor="#d1dde0" height="26"><b>انضباط</b></td>
+<td bgcolor="#d1dde0" height="26"><b>قرآن</b></td>
+<td bgcolor="#d1dde0" height="26"><b>معارف اسلامی</b></td>
+<td bgcolor="#d1dde0" height="26"><b>قرائت فارسی</b></td>
+<td bgcolor="#d1dde0" height="26"><b>املا فارسی</b></td>
+<td bgcolor="#d1dde0" height="26"><b>انشا فارسی</b></td>
+<td bgcolor="#d1dde0" height="26"><b>زبان عربی</b></td>
+<td bgcolor="#d1dde0" height="26"><b>زبان خارجی</b></td>
+<td bgcolor="#d1dde0" height="26"><b>علوم تجربی</b></td>
+<td bgcolor="#d1dde0" height="26"><b>ریاضیات</b></td>
+<td bgcolor="#d1dde0" height="26"><b>تربیت بدنی</b></td>
+<td bgcolor="#d1dde0" height="26"><b>مطالعات اجتماعی</b></td>
+<td bgcolor="#d1dde0" height="26"><b>فرهنگ وهنر</b></td>
+<td bgcolor="#d1dde0" height="26"><b>کاروفناوری</b></td>
+<td bgcolor="#d1dde0" height="26"><b>تفکر و سبک زندگی</b></td>
+</tr>
+
+<tr><td>احمدزاده اسفقن</td>
+<td class="e" sc="1451"><input name="da1" u_id="536"value="20"size="1"maxlength="5"id="s1451"></td>
+<td class="e" sc="1452"><input name="da2" u_id="536"value="15"size="1"maxlength="5"id="s1452"></td>
+<td class="e" sc="1453"><input name="da3" u_id="536"value="18"size="1"maxlength="5"id="s1453"></td>
+<td class="e" sc="1454"><input name="da4" u_id="536"value="16"size="1"maxlength="5"id="s1454"></td>
+<td class="e" sc="1455"><input name="da5" u_id="536"value="18"size="1"maxlength="5"id="s1455"></td>
+<td class="e" sc="1456"><input name="da6" u_id="536"value="19"size="1"maxlength="5"id="s1456"></td>
+<td class="e" sc="1457"><input name="da7" u_id="536"value="18"size="1"maxlength="5"id="s1457"></td>
+<td class="e" sc="1458"><input name="da8" u_id="536"value="20"size="1"maxlength="5"id="s1458"></td>
+<td class="e" sc="1459"><input name="da9" u_id="536"value="17.50"size="1"maxlength="5"id="s1459"></td>
+<td class="e" sc="14510"><input name="da10" u_id="536"value="11"size="1"maxlength="5"id="s14510"></td>
+<td class="e" sc="14511"><input name="da11" u_id="536"value="20"size="1"maxlength="5"id="s14511"></td>
+<td class="e" sc="14512"><input name="da12" u_id="536"value="20"size="1"maxlength="5"id="s14512"></td>
+<td class="e" sc="14513"><input name="da13" u_id="536"value="19"size="1"maxlength="5"id="s14513"></td>
+<td class="e" sc="14514"><input name="da14" u_id="536"value="18.50"size="1"maxlength="5"id="s14514"></td>
+<td class="e" sc="14515"><input name="da15" u_id="536"value="18"size="1"maxlength="5"id="s14515"></td>
+</tr>
+
+<tr><td>باقری تیکمه داش</td>
+<td class="e" sc="2451"><input name="da1" u_id="537"value="20"size="1"maxlength="5"id="s2451"></td>
+<td class="e" sc="2452"><input name="da2" u_id="537"value="19"size="1"maxlength="5"id="s2452"></td>
+<td class="e" sc="2453"><input name="da3" u_id="537"value="19"size="1"maxlength="5"id="s2453"></td>
+<td class="e" sc="2454"><input name="da4" u_id="537"value="19"size="1"maxlength="5"id="s2454"></td>
+<td class="e" sc="2455"><input name="da5" u_id="537"value="19"size="1"maxlength="5"id="s2455"></td>
+<td class="e" sc="2456"><input name="da6" u_id="537"value="20"size="1"maxlength="5"id="s2456"></td>
+<td class="e" sc="2457"><input name="da7" u_id="537"value="19"size="1"maxlength="5"id="s2457"></td>
+<td class="e" sc="2458"><input name="da8" u_id="537"value="20"size="1"maxlength="5"id="s2458"></td>
+<td class="e" sc="2459"><input name="da9" u_id="537"value="17.50"size="1"maxlength="5"id="s2459"></td>
+<td class="e" sc="24510"><input name="da10" u_id="537"value="14.75"size="1"maxlength="5"id="s24510"></td>
+<td class="e" sc="24511"><input name="da11" u_id="537"value="20"size="1"maxlength="5"id="s24511"></td>
+<td class="e" sc="24512"><input name="da12" u_id="537"value="19"size="1"maxlength="5"id="s24512"></td>
+<td class="e" sc="24513"><input name="da13" u_id="537"value="19"size="1"maxlength="5"id="s24513"></td>
+<td class="e" sc="24514"><input name="da14" u_id="537"value="16"size="1"maxlength="5"id="s24514"></td>
+<td class="e" sc="24515"><input name="da15" u_id="537"value="20"size="1"maxlength="5"id="s24515"></td>
+</tr>
+
+<tr><td>بخشعلی پور آبکنار</td>
+<td class="e" sc="3451"><input name="da1" u_id="538"value="20"size="1"maxlength="5"id="s3451"></td>
+<td class="e" sc="3452"><input name="da2" u_id="538"value="15"size="1"maxlength="5"id="s3452"></td>
+<td class="e" sc="3453"><input name="da3" u_id="538"value="14"size="1"maxlength="5"id="s3453"></td>
+<td class="e" sc="3454"><input name="da4" u_id="538"value="10"size="1"maxlength="5"id="s3454"></td>
+<td class="e" sc="3455"><input name="da5" u_id="538"value="11"size="1"maxlength="5"id="s3455"></td>
+<td class="e" sc="3456"><input name="da6" u_id="538"value="17"size="1"maxlength="5"id="s3456"></td>
+<td class="e" sc="3457"><input name="da7" u_id="538"value="18"size="1"maxlength="5"id="s3457"></td>
+<td class="e" sc="3458"><input name="da8" u_id="538"value="20"size="1"maxlength="5"id="s3458"></td>
+<td class="e" sc="3459"><input name="da9" u_id="538"value="15.25"size="1"maxlength="5"id="s3459"></td>
+<td class="e" sc="34510"><input name="da10" u_id="538"value="13.50"size="1"maxlength="5"id="s34510"></td>
+<td class="e" sc="34511"><input name="da11" u_id="538"value="20"size="1"maxlength="5"id="s34511"></td>
+<td class="e" sc="34512"><input name="da12" u_id="538"value="15.50"size="1"maxlength="5"id="s34512"></td>
+<td class="e" sc="34513"><input name="da13" u_id="538"value="19"size="1"maxlength="5"id="s34513"></td>
+<td class="e" sc="34514"><input name="da14" u_id="538"value="15"size="1"maxlength="5"id="s34514"></td>
+<td class="e" sc="34515"><input name="da15" u_id="538"value="19"size="1"maxlength="5"id="s34515"></td>
+</tr>
+
+<tr><td>برنج کار</td>
+<td class="e" sc="4451"><input name="da1" u_id="539"value="20"size="1"maxlength="5"id="s4451"></td>
+<td class="e" sc="4452"><input name="da2" u_id="539"value="20"size="1"maxlength="5"id="s4452"></td>
+<td class="e" sc="4453"><input name="da3" u_id="539"value="20"size="1"maxlength="5"id="s4453"></td>
+<td class="e" sc="4454"><input name="da4" u_id="539"value="19"size="1"maxlength="5"id="s4454"></td>
+<td class="e" sc="4455"><input name="da5" u_id="539"value="20"size="1"maxlength="5"id="s4455"></td>
+<td class="e" sc="4456"><input name="da6" u_id="539"value="20"size="1"maxlength="5"id="s4456"></td>
+<td class="e" sc="4457"><input name="da7" u_id="539"value="19"size="1"maxlength="5"id="s4457"></td>
+<td class="e" sc="4458"><input name="da8" u_id="539"value="19"size="1"maxlength="5"id="s4458"></td>
+<td class="e" sc="4459"><input name="da9" u_id="539"value="20"size="1"maxlength="5"id="s4459"></td>
+<td class="e" sc="44510"><input name="da10" u_id="539"value="20"size="1"maxlength="5"id="s44510"></td>
+<td class="e" sc="44511"><input name="da11" u_id="539"value="20"size="1"maxlength="5"id="s44511"></td>
+<td class="e" sc="44512"><input name="da12" u_id="539"value="20"size="1"maxlength="5"id="s44512"></td>
+<td class="e" sc="44513"><input name="da13" u_id="539"value="19"size="1"maxlength="5"id="s44513"></td>
+<td class="e" sc="44514"><input name="da14" u_id="539"value="20"size="1"maxlength="5"id="s44514"></td>
+<td class="e" sc="44515"><input name="da15" u_id="539"value="20"size="1"maxlength="5"id="s44515"></td>
+</tr>
+
+<tr><td>بن یعقوب ثانی</td>
+<td class="e" sc="5451"><input name="da1" u_id="540"value="20"size="1"maxlength="5"id="s5451"></td>
+<td class="e" sc="5452"><input name="da2" u_id="540"value="20"size="1"maxlength="5"id="s5452"></td>
+<td class="e" sc="5453"><input name="da3" u_id="540"value=""size="1"maxlength="5"id="s5453"></td>
+<td class="e" sc="5454"><input name="da4" u_id="540"value="10"size="1"maxlength="5"id="s5454"></td>
+<td class="e" sc="5455"><input name="da5" u_id="540"value="17"size="1"maxlength="5"id="s5455"></td>
+<td class="e" sc="5456"><input name="da6" u_id="540"value="10"size="1"maxlength="5"id="s5456"></td>
+<td class="e" sc="5457"><input name="da7" u_id="540"value="12"size="1"maxlength="5"id="s5457"></td>
+<td class="e" sc="5458"><input name="da8" u_id="540"value=""size="1"maxlength="5"id="s5458"></td>
+<td class="e" sc="5459"><input name="da9" u_id="540"value="10.25"size="1"maxlength="5"id="s5459"></td>
+<td class="e" sc="54510"><input name="da10" u_id="540"value="5.25"size="1"maxlength="5"id="s54510"></td>
+<td class="e" sc="54511"><input name="da11" u_id="540"value="20"size="1"maxlength="5"id="s54511"></td>
+<td class="e" sc="54512"><input name="da12" u_id="540"value="10"size="1"maxlength="5"id="s54512"></td>
+<td class="e" sc="54513"><input name="da13" u_id="540"value="19"size="1"maxlength="5"id="s54513"></td>
+<td class="e" sc="54514"><input name="da14" u_id="540"value="15"size="1"maxlength="5"id="s54514"></td>
+<td class="e" sc="54515"><input name="da15" u_id="540"value="19"size="1"maxlength="5"id="s54515"></td>
+</tr>
+
+<tr><td>بیوک</td>
+<td class="e" sc="6451"><input name="da1" u_id="541"value="19"size="1"maxlength="5"id="s6451"></td>
+<td class="e" sc="6452"><input name="da2" u_id="541"value="17"size="1"maxlength="5"id="s6452"></td>
+<td class="e" sc="6453"><input name="da3" u_id="541"value="14"size="1"maxlength="5"id="s6453"></td>
+<td class="e" sc="6454"><input name="da4" u_id="541"value="10"size="1"maxlength="5"id="s6454"></td>
+<td class="e" sc="6455"><input name="da5" u_id="541"value="17"size="1"maxlength="5"id="s6455"></td>
+<td class="e" sc="6456"><input name="da6" u_id="541"value="18"size="1"maxlength="5"id="s6456"></td>
+<td class="e" sc="6457"><input name="da7" u_id="541"value="15"size="1"maxlength="5"id="s6457"></td>
+<td class="e" sc="6458"><input name="da8" u_id="541"value="14"size="1"maxlength="5"id="s6458"></td>
+<td class="e" sc="6459"><input name="da9" u_id="541"value="16.25"size="1"maxlength="5"id="s6459"></td>
+<td class="e" sc="64510"><input name="da10" u_id="541"value="10"size="1"maxlength="5"id="s64510"></td>
+<td class="e" sc="64511"><input name="da11" u_id="541"value="20"size="1"maxlength="5"id="s64511"></td>
+<td class="e" sc="64512"><input name="da12" u_id="541"value=""size="1"maxlength="5"id="s64512"></td>
+<td class="e" sc="64513"><input name="da13" u_id="541"value="20"size="1"maxlength="5"id="s64513"></td>
+<td class="e" sc="64514"><input name="da14" u_id="541"value="15.50"size="1"maxlength="5"id="s64514"></td>
+<td class="e" sc="64515"><input name="da15" u_id="541"value="19"size="1"maxlength="5"id="s64515"></td>
+</tr>
+
+<tr><td>پاکیزه منش</td>
+<td class="e" sc="7451"><input name="da1" u_id="542"value="20"size="1"maxlength="5"id="s7451"></td>
+<td class="e" sc="7452"><input name="da2" u_id="542"value="16"size="1"maxlength="5"id="s7452"></td>
+<td class="e" sc="7453"><input name="da3" u_id="542"value="12"size="1"maxlength="5"id="s7453"></td>
+<td class="e" sc="7454"><input name="da4" u_id="542"value="7"size="1"maxlength="5"id="s7454"></td>
+<td class="e" sc="7455"><input name="da5" u_id="542"value="12"size="1"maxlength="5"id="s7455"></td>
+<td class="e" sc="7456"><input name="da6" u_id="542"value="10"size="1"maxlength="5"id="s7456"></td>
+<td class="e" sc="7457"><input name="da7" u_id="542"value="13"size="1"maxlength="5"id="s7457"></td>
+<td class="e" sc="7458"><input name="da8" u_id="542"value="15"size="1"maxlength="5"id="s7458"></td>
+<td class="e" sc="7459"><input name="da9" u_id="542"value="6"size="1"maxlength="5"id="s7459"></td>
+<td class="e" sc="74510"><input name="da10" u_id="542"value="4.75"size="1"maxlength="5"id="s74510"></td>
+<td class="e" sc="74511"><input name="da11" u_id="542"value="20"size="1"maxlength="5"id="s74511"></td>
+<td class="e" sc="74512"><input name="da12" u_id="542"value="5"size="1"maxlength="5"id="s74512"></td>
+<td class="e" sc="74513"><input name="da13" u_id="542"value="19"size="1"maxlength="5"id="s74513"></td>
+<td class="e" sc="74514"><input name="da14" u_id="542"value="16"size="1"maxlength="5"id="s74514"></td>
+<td class="e" sc="74515"><input name="da15" u_id="542"value="20"size="1"maxlength="5"id="s74515"></td>
+</tr>
+
+<tr><td>پورباقی</td>
+<td class="e" sc="8451"><input name="da1" u_id="543"value="20"size="1"maxlength="5"id="s8451"></td>
+<td class="e" sc="8452"><input name="da2" u_id="543"value="18"size="1"maxlength="5"id="s8452"></td>
+<td class="e" sc="8453"><input name="da3" u_id="543"value="20"size="1"maxlength="5"id="s8453"></td>
+<td class="e" sc="8454"><input name="da4" u_id="543"value="18"size="1"maxlength="5"id="s8454"></td>
+<td class="e" sc="8455"><input name="da5" u_id="543"value="18"size="1"maxlength="5"id="s8455"></td>
+<td class="e" sc="8456"><input name="da6" u_id="543"value="20"size="1"maxlength="5"id="s8456"></td>
+<td class="e" sc="8457"><input name="da7" u_id="543"value="17"size="1"maxlength="5"id="s8457"></td>
+<td class="e" sc="8458"><input name="da8" u_id="543"value="19.50"size="1"maxlength="5"id="s8458"></td>
+<td class="e" sc="8459"><input name="da9" u_id="543"value="10"size="1"maxlength="5"id="s8459"></td>
+<td class="e" sc="84510"><input name="da10" u_id="543"value="19"size="1"maxlength="5"id="s84510"></td>
+<td class="e" sc="84511"><input name="da11" u_id="543"value="20"size="1"maxlength="5"id="s84511"></td>
+<td class="e" sc="84512"><input name="da12" u_id="543"value="20"size="1"maxlength="5"id="s84512"></td>
+<td class="e" sc="84513"><input name="da13" u_id="543"value="19"size="1"maxlength="5"id="s84513"></td>
+<td class="e" sc="84514"><input name="da14" u_id="543"value="20"size="1"maxlength="5"id="s84514"></td>
+<td class="e" sc="84515"><input name="da15" u_id="543"value="20"size="1"maxlength="5"id="s84515"></td>
+</tr>
+
+<tr><td>پورجعفری مقدم</td>
+<td class="e" sc="9451"><input name="da1" u_id="544"value="20"size="1"maxlength="5"id="s9451"></td>
+<td class="e" sc="9452"><input name="da2" u_id="544"value="16"size="1"maxlength="5"id="s9452"></td>
+<td class="e" sc="9453"><input name="da3" u_id="544"value="18"size="1"maxlength="5"id="s9453"></td>
+<td class="e" sc="9454"><input name="da4" u_id="544"value="10"size="1"maxlength="5"id="s9454"></td>
+<td class="e" sc="9455"><input name="da5" u_id="544"value="17"size="1"maxlength="5"id="s9455"></td>
+<td class="e" sc="9456"><input name="da6" u_id="544"value="19"size="1"maxlength="5"id="s9456"></td>
+<td class="e" sc="9457"><input name="da7" u_id="544"value="14"size="1"maxlength="5"id="s9457"></td>
+<td class="e" sc="9458"><input name="da8" u_id="544"value="19.50"size="1"maxlength="5"id="s9458"></td>
+<td class="e" sc="9459"><input name="da9" u_id="544"value="17"size="1"maxlength="5"id="s9459"></td>
+<td class="e" sc="94510"><input name="da10" u_id="544"value="15.25"size="1"maxlength="5"id="s94510"></td>
+<td class="e" sc="94511"><input name="da11" u_id="544"value="20"size="1"maxlength="5"id="s94511"></td>
+<td class="e" sc="94512"><input name="da12" u_id="544"value="17.50"size="1"maxlength="5"id="s94512"></td>
+<td class="e" sc="94513"><input name="da13" u_id="544"value="19"size="1"maxlength="5"id="s94513"></td>
+<td class="e" sc="94514"><input name="da14" u_id="544"value="16"size="1"maxlength="5"id="s94514"></td>
+<td class="e" sc="94515"><input name="da15" u_id="544"value="18"size="1"maxlength="5"id="s94515"></td>
+</tr>
+
+<tr><td>توانا</td>
+<td class="e" sc="10451"><input name="da1" u_id="545"value="20"size="1"maxlength="5"id="s10451"></td>
+<td class="e" sc="10452"><input name="da2" u_id="545"value="20"size="1"maxlength="5"id="s10452"></td>
+<td class="e" sc="10453"><input name="da3" u_id="545"value="20"size="1"maxlength="5"id="s10453"></td>
+<td class="e" sc="10454"><input name="da4" u_id="545"value="17"size="1"maxlength="5"id="s10454"></td>
+<td class="e" sc="10455"><input name="da5" u_id="545"value="19"size="1"maxlength="5"id="s10455"></td>
+<td class="e" sc="10456"><input name="da6" u_id="545"value="20"size="1"maxlength="5"id="s10456"></td>
+<td class="e" sc="10457"><input name="da7" u_id="545"value="16"size="1"maxlength="5"id="s10457"></td>
+<td class="e" sc="10458"><input name="da8" u_id="545"value="20"size="1"maxlength="5"id="s10458"></td>
+<td class="e" sc="10459"><input name="da9" u_id="545"value="20"size="1"maxlength="5"id="s10459"></td>
+<td class="e" sc="104510"><input name="da10" u_id="545"value="16.75"size="1"maxlength="5"id="s104510"></td>
+<td class="e" sc="104511"><input name="da11" u_id="545"value="20"size="1"maxlength="5"id="s104511"></td>
+<td class="e" sc="104512"><input name="da12" u_id="545"value="20"size="1"maxlength="5"id="s104512"></td>
+<td class="e" sc="104513"><input name="da13" u_id="545"value="19"size="1"maxlength="5"id="s104513"></td>
+<td class="e" sc="104514"><input name="da14" u_id="545"value="20"size="1"maxlength="5"id="s104514"></td>
+<td class="e" sc="104515"><input name="da15" u_id="545"value="20"size="1"maxlength="5"id="s104515"></td>
+</tr>
+
+<tr><td>تیموری شیراز</td>
+<td class="e" sc="11451"><input name="da1" u_id="546"value="20"size="1"maxlength="5"id="s11451"></td>
+<td class="e" sc="11452"><input name="da2" u_id="546"value="20"size="1"maxlength="5"id="s11452"></td>
+<td class="e" sc="11453"><input name="da3" u_id="546"value="20"size="1"maxlength="5"id="s11453"></td>
+<td class="e" sc="11454"><input name="da4" u_id="546"value="17"size="1"maxlength="5"id="s11454"></td>
+<td class="e" sc="11455"><input name="da5" u_id="546"value="20"size="1"maxlength="5"id="s11455"></td>
+<td class="e" sc="11456"><input name="da6" u_id="546"value="20"size="1"maxlength="5"id="s11456"></td>
+<td class="e" sc="11457"><input name="da7" u_id="546"value="18"size="1"maxlength="5"id="s11457"></td>
+<td class="e" sc="11458"><input name="da8" u_id="546"value="20"size="1"maxlength="5"id="s11458"></td>
+<td class="e" sc="11459"><input name="da9" u_id="546"value="17.50"size="1"maxlength="5"id="s11459"></td>
+<td class="e" sc="114510"><input name="da10" u_id="546"value="10.25"size="1"maxlength="5"id="s114510"></td>
+<td class="e" sc="114511"><input name="da11" u_id="546"value="20"size="1"maxlength="5"id="s114511"></td>
+<td class="e" sc="114512"><input name="da12" u_id="546"value="20"size="1"maxlength="5"id="s114512"></td>
+<td class="e" sc="114513"><input name="da13" u_id="546"value="18"size="1"maxlength="5"id="s114513"></td>
+<td class="e" sc="114514"><input name="da14" u_id="546"value="20"size="1"maxlength="5"id="s114514"></td>
+<td class="e" sc="114515"><input name="da15" u_id="546"value="19"size="1"maxlength="5"id="s114515"></td>
+</tr>
+
+<tr><td>جکتاج دینانی</td>
+<td class="e" sc="12451"><input name="da1" u_id="547"value="20"size="1"maxlength="5"id="s12451"></td>
+<td class="e" sc="12452"><input name="da2" u_id="547"value="20"size="1"maxlength="5"id="s12452"></td>
+<td class="e" sc="12453"><input name="da3" u_id="547"value=""size="1"maxlength="5"id="s12453"></td>
+<td class="e" sc="12454"><input name="da4" u_id="547"value="7"size="1"maxlength="5"id="s12454"></td>
+<td class="e" sc="12455"><input name="da5" u_id="547"value="11"size="1"maxlength="5"id="s12455"></td>
+<td class="e" sc="12456"><input name="da6" u_id="547"value="18"size="1"maxlength="5"id="s12456"></td>
+<td class="e" sc="12457"><input name="da7" u_id="547"value="14"size="1"maxlength="5"id="s12457"></td>
+<td class="e" sc="12458"><input name="da8" u_id="547"value=""size="1"maxlength="5"id="s12458"></td>
+<td class="e" sc="12459"><input name="da9" u_id="547"value="11.50"size="1"maxlength="5"id="s12459"></td>
+<td class="e" sc="124510"><input name="da10" u_id="547"value="5.50"size="1"maxlength="5"id="s124510"></td>
+<td class="e" sc="124511"><input name="da11" u_id="547"value="20"size="1"maxlength="5"id="s124511"></td>
+<td class="e" sc="124512"><input name="da12" u_id="547"value="12"size="1"maxlength="5"id="s124512"></td>
+<td class="e" sc="124513"><input name="da13" u_id="547"value="20"size="1"maxlength="5"id="s124513"></td>
+<td class="e" sc="124514"><input name="da14" u_id="547"value="16"size="1"maxlength="5"id="s124514"></td>
+<td class="e" sc="124515"><input name="da15" u_id="547"value="20"size="1"maxlength="5"id="s124515"></td>
+</tr>
+
+<tr><td>جهان بین</td>
+<td class="e" sc="13451"><input name="da1" u_id="548"value="20"size="1"maxlength="5"id="s13451"></td>
+<td class="e" sc="13452"><input name="da2" u_id="548"value="20"size="1"maxlength="5"id="s13452"></td>
+<td class="e" sc="13453"><input name="da3" u_id="548"value="20"size="1"maxlength="5"id="s13453"></td>
+<td class="e" sc="13454"><input name="da4" u_id="548"value="20"size="1"maxlength="5"id="s13454"></td>
+<td class="e" sc="13455"><input name="da5" u_id="548"value="20"size="1"maxlength="5"id="s13455"></td>
+<td class="e" sc="13456"><input name="da6" u_id="548"value="20"size="1"maxlength="5"id="s13456"></td>
+<td class="e" sc="13457"><input name="da7" u_id="548"value="20"size="1"maxlength="5"id="s13457"></td>
+<td class="e" sc="13458"><input name="da8" u_id="548"value="20"size="1"maxlength="5"id="s13458"></td>
+<td class="e" sc="13459"><input name="da9" u_id="548"value="20"size="1"maxlength="5"id="s13459"></td>
+<td class="e" sc="134510"><input name="da10" u_id="548"value="20"size="1"maxlength="5"id="s134510"></td>
+<td class="e" sc="134511"><input name="da11" u_id="548"value="20"size="1"maxlength="5"id="s134511"></td>
+<td class="e" sc="134512"><input name="da12" u_id="548"value="20"size="1"maxlength="5"id="s134512"></td>
+<td class="e" sc="134513"><input name="da13" u_id="548"value="19"size="1"maxlength="5"id="s134513"></td>
+<td class="e" sc="134514"><input name="da14" u_id="548"value="15"size="1"maxlength="5"id="s134514"></td>
+<td class="e" sc="134515"><input name="da15" u_id="548"value="20"size="1"maxlength="5"id="s134515"></td>
+</tr>
+
+<tr><td>رضویان</td>
+<td class="e" sc="14451"><input name="da1" u_id="549"value="20"size="1"maxlength="5"id="s14451"></td>
+<td class="e" sc="14452"><input name="da2" u_id="549"value="20"size="1"maxlength="5"id="s14452"></td>
+<td class="e" sc="14453"><input name="da3" u_id="549"value="20"size="1"maxlength="5"id="s14453"></td>
+<td class="e" sc="14454"><input name="da4" u_id="549"value="20"size="1"maxlength="5"id="s14454"></td>
+<td class="e" sc="14455"><input name="da5" u_id="549"value="20"size="1"maxlength="5"id="s14455"></td>
+<td class="e" sc="14456"><input name="da6" u_id="549"value="20"size="1"maxlength="5"id="s14456"></td>
+<td class="e" sc="14457"><input name="da7" u_id="549"value="17"size="1"maxlength="5"id="s14457"></td>
+<td class="e" sc="14458"><input name="da8" u_id="549"value="18"size="1"maxlength="5"id="s14458"></td>
+<td class="e" sc="14459"><input name="da9" u_id="549"value="17.50"size="1"maxlength="5"id="s14459"></td>
+<td class="e" sc="144510"><input name="da10" u_id="549"value="20"size="1"maxlength="5"id="s144510"></td>
+<td class="e" sc="144511"><input name="da11" u_id="549"value="20"size="1"maxlength="5"id="s144511"></td>
+<td class="e" sc="144512"><input name="da12" u_id="549"value="20"size="1"maxlength="5"id="s144512"></td>
+<td class="e" sc="144513"><input name="da13" u_id="549"value="20"size="1"maxlength="5"id="s144513"></td>
+<td class="e" sc="144514"><input name="da14" u_id="549"value="15"size="1"maxlength="5"id="s144514"></td>
+<td class="e" sc="144515"><input name="da15" u_id="549"value="20"size="1"maxlength="5"id="s144515"></td>
+</tr>
+
+<tr><td>رفاهتی</td>
+<td class="e" sc="15451"><input name="da1" u_id="550"value="20"size="1"maxlength="5"id="s15451"></td>
+<td class="e" sc="15452"><input name="da2" u_id="550"value="20"size="1"maxlength="5"id="s15452"></td>
+<td class="e" sc="15453"><input name="da3" u_id="550"value="20"size="1"maxlength="5"id="s15453"></td>
+<td class="e" sc="15454"><input name="da4" u_id="550"value="16"size="1"maxlength="5"id="s15454"></td>
+<td class="e" sc="15455"><input name="da5" u_id="550"value="19"size="1"maxlength="5"id="s15455"></td>
+<td class="e" sc="15456"><input name="da6" u_id="550"value="20"size="1"maxlength="5"id="s15456"></td>
+<td class="e" sc="15457"><input name="da7" u_id="550"value="17"size="1"maxlength="5"id="s15457"></td>
+<td class="e" sc="15458"><input name="da8" u_id="550"value="20"size="1"maxlength="5"id="s15458"></td>
+<td class="e" sc="15459"><input name="da9" u_id="550"value="18.50"size="1"maxlength="5"id="s15459"></td>
+<td class="e" sc="154510"><input name="da10" u_id="550"value="20"size="1"maxlength="5"id="s154510"></td>
+<td class="e" sc="154511"><input name="da11" u_id="550"value="20"size="1"maxlength="5"id="s154511"></td>
+<td class="e" sc="154512"><input name="da12" u_id="550"value="20"size="1"maxlength="5"id="s154512"></td>
+<td class="e" sc="154513"><input name="da13" u_id="550"value="19"size="1"maxlength="5"id="s154513"></td>
+<td class="e" sc="154514"><input name="da14" u_id="550"value="16"size="1"maxlength="5"id="s154514"></td>
+<td class="e" sc="154515"><input name="da15" u_id="550"value="20"size="1"maxlength="5"id="s154515"></td>
+</tr>
+
+<tr><td>رکائی خانه کناری</td>
+<td class="e" sc="16451"><input name="da1" u_id="551"value="20"size="1"maxlength="5"id="s16451"></td>
+<td class="e" sc="16452"><input name="da2" u_id="551"value="20"size="1"maxlength="5"id="s16452"></td>
+<td class="e" sc="16453"><input name="da3" u_id="551"value="15"size="1"maxlength="5"id="s16453"></td>
+<td class="e" sc="16454"><input name="da4" u_id="551"value="15"size="1"maxlength="5"id="s16454"></td>
+<td class="e" sc="16455"><input name="da5" u_id="551"value="17"size="1"maxlength="5"id="s16455"></td>
+<td class="e" sc="16456"><input name="da6" u_id="551"value="19"size="1"maxlength="5"id="s16456"></td>
+<td class="e" sc="16457"><input name="da7" u_id="551"value="17"size="1"maxlength="5"id="s16457"></td>
+<td class="e" sc="16458"><input name="da8" u_id="551"value="19"size="1"maxlength="5"id="s16458"></td>
+<td class="e" sc="16459"><input name="da9" u_id="551"value="16.50"size="1"maxlength="5"id="s16459"></td>
+<td class="e" sc="164510"><input name="da10" u_id="551"value="7.75"size="1"maxlength="5"id="s164510"></td>
+<td class="e" sc="164511"><input name="da11" u_id="551"value="20"size="1"maxlength="5"id="s164511"></td>
+<td class="e" sc="164512"><input name="da12" u_id="551"value="17"size="1"maxlength="5"id="s164512"></td>
+<td class="e" sc="164513"><input name="da13" u_id="551"value="19"size="1"maxlength="5"id="s164513"></td>
+<td class="e" sc="164514"><input name="da14" u_id="551"value="15.50"size="1"maxlength="5"id="s164514"></td>
+<td class="e" sc="164515"><input name="da15" u_id="551"value="20"size="1"maxlength="5"id="s164515"></td>
+</tr>
+
+<tr><td>شریعت طلب</td>
+<td class="e" sc="17451"><input name="da1" u_id="552"value="19"size="1"maxlength="5"id="s17451"></td>
+<td class="e" sc="17452"><input name="da2" u_id="552"value="20"size="1"maxlength="5"id="s17452"></td>
+<td class="e" sc="17453"><input name="da3" u_id="552"value="20"size="1"maxlength="5"id="s17453"></td>
+<td class="e" sc="17454"><input name="da4" u_id="552"value="16"size="1"maxlength="5"id="s17454"></td>
+<td class="e" sc="17455"><input name="da5" u_id="552"value="18"size="1"maxlength="5"id="s17455"></td>
+<td class="e" sc="17456"><input name="da6" u_id="552"value="20"size="1"maxlength="5"id="s17456"></td>
+<td class="e" sc="17457"><input name="da7" u_id="552"value="17"size="1"maxlength="5"id="s17457"></td>
+<td class="e" sc="17458"><input name="da8" u_id="552"value="19"size="1"maxlength="5"id="s17458"></td>
+<td class="e" sc="17459"><input name="da9" u_id="552"value="18.25"size="1"maxlength="5"id="s17459"></td>
+<td class="e" sc="174510"><input name="da10" u_id="552"value="11.75"size="1"maxlength="5"id="s174510"></td>
+<td class="e" sc="174511"><input name="da11" u_id="552"value="20"size="1"maxlength="5"id="s174511"></td>
+<td class="e" sc="174512"><input name="da12" u_id="552"value="17"size="1"maxlength="5"id="s174512"></td>
+<td class="e" sc="174513"><input name="da13" u_id="552"value="19"size="1"maxlength="5"id="s174513"></td>
+<td class="e" sc="174514"><input name="da14" u_id="552"value="18.50"size="1"maxlength="5"id="s174514"></td>
+<td class="e" sc="174515"><input name="da15" u_id="552"value="20"size="1"maxlength="5"id="s174515"></td>
+</tr>
+
+<tr><td>غفاری</td>
+<td class="e" sc="18451"><input name="da1" u_id="553"value="20"size="1"maxlength="5"id="s18451"></td>
+<td class="e" sc="18452"><input name="da2" u_id="553"value="20"size="1"maxlength="5"id="s18452"></td>
+<td class="e" sc="18453"><input name="da3" u_id="553"value="20"size="1"maxlength="5"id="s18453"></td>
+<td class="e" sc="18454"><input name="da4" u_id="553"value="18"size="1"maxlength="5"id="s18454"></td>
+<td class="e" sc="18455"><input name="da5" u_id="553"value="20"size="1"maxlength="5"id="s18455"></td>
+<td class="e" sc="18456"><input name="da6" u_id="553"value="20"size="1"maxlength="5"id="s18456"></td>
+<td class="e" sc="18457"><input name="da7" u_id="553"value="16"size="1"maxlength="5"id="s18457"></td>
+<td class="e" sc="18458"><input name="da8" u_id="553"value="18.50"size="1"maxlength="5"id="s18458"></td>
+<td class="e" sc="18459"><input name="da9" u_id="553"value="18.50"size="1"maxlength="5"id="s18459"></td>
+<td class="e" sc="184510"><input name="da10" u_id="553"value="19"size="1"maxlength="5"id="s184510"></td>
+<td class="e" sc="184511"><input name="da11" u_id="553"value="20"size="1"maxlength="5"id="s184511"></td>
+<td class="e" sc="184512"><input name="da12" u_id="553"value="20"size="1"maxlength="5"id="s184512"></td>
+<td class="e" sc="184513"><input name="da13" u_id="553"value="19"size="1"maxlength="5"id="s184513"></td>
+<td class="e" sc="184514"><input name="da14" u_id="553"value="18.50"size="1"maxlength="5"id="s184514"></td>
+<td class="e" sc="184515"><input name="da15" u_id="553"value="20"size="1"maxlength="5"id="s184515"></td>
+</tr>
+
+<tr><td>فرجود چوکامی</td>
+<td class="e" sc="19451"><input name="da1" u_id="554"value="20"size="1"maxlength="5"id="s19451"></td>
+<td class="e" sc="19452"><input name="da2" u_id="554"value="20"size="1"maxlength="5"id="s19452"></td>
+<td class="e" sc="19453"><input name="da3" u_id="554"value="15"size="1"maxlength="5"id="s19453"></td>
+<td class="e" sc="19454"><input name="da4" u_id="554"value="10"size="1"maxlength="5"id="s19454"></td>
+<td class="e" sc="19455"><input name="da5" u_id="554"value="12"size="1"maxlength="5"id="s19455"></td>
+<td class="e" sc="19456"><input name="da6" u_id="554"value="19"size="1"maxlength="5"id="s19456"></td>
+<td class="e" sc="19457"><input name="da7" u_id="554"value="16"size="1"maxlength="5"id="s19457"></td>
+<td class="e" sc="19458"><input name="da8" u_id="554"value="17"size="1"maxlength="5"id="s19458"></td>
+<td class="e" sc="19459"><input name="da9" u_id="554"value="11.25"size="1"maxlength="5"id="s19459"></td>
+<td class="e" sc="194510"><input name="da10" u_id="554"value="14.50"size="1"maxlength="5"id="s194510"></td>
+<td class="e" sc="194511"><input name="da11" u_id="554"value="20"size="1"maxlength="5"id="s194511"></td>
+<td class="e" sc="194512"><input name="da12" u_id="554"value="15"size="1"maxlength="5"id="s194512"></td>
+<td class="e" sc="194513"><input name="da13" u_id="554"value="18"size="1"maxlength="5"id="s194513"></td>
+<td class="e" sc="194514"><input name="da14" u_id="554"value="17"size="1"maxlength="5"id="s194514"></td>
+<td class="e" sc="194515"><input name="da15" u_id="554"value="20"size="1"maxlength="5"id="s194515"></td>
+</tr>
+
+<tr><td>مومنی زاده</td>
+<td class="e" sc="20451"><input name="da1" u_id="555"value="20"size="1"maxlength="5"id="s20451"></td>
+<td class="e" sc="20452"><input name="da2" u_id="555"value="20"size="1"maxlength="5"id="s20452"></td>
+<td class="e" sc="20453"><input name="da3" u_id="555"value="20"size="1"maxlength="5"id="s20453"></td>
+<td class="e" sc="20454"><input name="da4" u_id="555"value="19"size="1"maxlength="5"id="s20454"></td>
+<td class="e" sc="20455"><input name="da5" u_id="555"value="18"size="1"maxlength="5"id="s20455"></td>
+<td class="e" sc="20456"><input name="da6" u_id="555"value="19"size="1"maxlength="5"id="s20456"></td>
+<td class="e" sc="20457"><input name="da7" u_id="555"value="15"size="1"maxlength="5"id="s20457"></td>
+<td class="e" sc="20458"><input name="da8" u_id="555"value="20"size="1"maxlength="5"id="s20458"></td>
+<td class="e" sc="20459"><input name="da9" u_id="555"value="16"size="1"maxlength="5"id="s20459"></td>
+<td class="e" sc="204510"><input name="da10" u_id="555"value="11.25"size="1"maxlength="5"id="s204510"></td>
+<td class="e" sc="204511"><input name="da11" u_id="555"value="20"size="1"maxlength="5"id="s204511"></td>
+<td class="e" sc="204512"><input name="da12" u_id="555"value="17.50"size="1"maxlength="5"id="s204512"></td>
+<td class="e" sc="204513"><input name="da13" u_id="555"value="19"size="1"maxlength="5"id="s204513"></td>
+<td class="e" sc="204514"><input name="da14" u_id="555"value="15.50"size="1"maxlength="5"id="s204514"></td>
+<td class="e" sc="204515"><input name="da15" u_id="555"value="20"size="1"maxlength="5"id="s204515"></td>
+</tr>
+
+
+
+</tbody></table></div></body>

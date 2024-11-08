@@ -4,7 +4,7 @@ class Database
 {
     private $host = 'localhost'; // Database host
 
-    private $db_name = 'ada'; // Database name
+    private $db_name = 'natilos'; // Database name
 
     private $username = 'root'; // Database username
 

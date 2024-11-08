@@ -1,13 +1,12 @@
 <?php
-//$input = file_get_contents('php://input');
+
 function http($uri, $array)
 {
-
     // Initialize a cURL session
     $ch = curl_init();
 
     // Set the URL of the website you want to send data to
-    curl_setopt($ch, CURLOPT_URL, $uri);
+    curl_setopt($ch, CURLOPT_URL, api.$uri);
 
     // Tell cURL to use the POST method
     curl_setopt($ch, CURLOPT_POST, 1);
@@ -26,5 +25,4 @@ function http($uri, $array)
 
     // Display the response
     return json_decode($response);
-
 }
