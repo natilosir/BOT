@@ -1,5 +1,5 @@
 # ORM
-ORM PHP
+eloquent ORM in PHP
 
 ## required
 
@@ -13,7 +13,7 @@ git clone https://github.com/natilosir/ORM/
 ```
 <br><br>
 
-## example
+## Example
 
 - Select all data with chaining methods
 ```bash
@@ -41,7 +41,10 @@ foreach ($searchResults as $result) {
 - Count users with where condition
 ```bash
 $userCount = DB::Table('users')
-    ->where('name','Jane Doe') // or search
+ // ->where('age', 25)  or search
+    ->where('age', 25, '>')
+    ->where('age', 25, '>', 'OR')
+    ->where('age', 25, '=', 'and')
     ->count();
 ```
 
@@ -49,7 +52,7 @@ $userCount = DB::Table('users')
 ```bash
 $orderedResults = DB::Table('users')
     ->where('name', 'John')
-    ->andwhere('name', 'jane')
+    ->where('name', 'jane')
     ->orderBy('id', 'deSC')
     ->limit(3)
     ->get();
@@ -101,6 +104,18 @@ $data->save(1); // 1 is id and where is with array $data->save('name' => 'Jane D
 ```bash
 DB::Table('users')
     ->delete(1); // 1 is id and where is with array ->delete(['name' => 'Jane Doe']);
+```
+
+- Using DISTINCT in SQL
+```bash
+$users = DB::Table('users')
+    ->select('email')
+    ->distinct()
+    ->get();
+
+foreach ($users as $user) {
+    echo $user['email'].'<br>';
+}
 ```
 
 - Run a custom SQL query

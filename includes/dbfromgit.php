@@ -2,13 +2,13 @@
 
 class Database
 {
-    private $host = 'localhost'; // Database host
+    private $host = 'localhost'; // Database host (typically localhost in Laragon)
 
-    private $db_name = 'natilosi_tbot'; // Database name
+    private $db_name = 'telegram_bot'; // Your database name
 
-    private $username = 'natilosi_tbot'; // Database username
+    private $username = 'root'; // Your database username
 
-    private $password = 'qwQW12'; // Database password
+    private $password = ''; // Your database password
 
     private $connection;
 
@@ -18,6 +18,7 @@ class Database
 
         try {
             $this->connection = new PDO("mysql:host={$this->host};dbname={$this->db_name};charset=utf8mb4", $this->username, $this->password);
+
             $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $exception) {
             echo 'Connection error: '.$exception->getMessage();

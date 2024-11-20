@@ -1,18 +1,20 @@
 {
-    "preset": "laravel",
-    "rules": {
-        "simplified_null_return": true,
-        "braces": true,
-        "new_with_braces": {
-            "anonymous_class": true,
-            "named_class": true
-        },
-        "binary_operator_spaces": {
-            "operators": {
-                "=>": "align_single_space_minimal",
-                "=": "align_single_space_minimal"
-              }
-            }
-        }
+  "preset": "laravel",
+  "rules": {
+    "simplified_null_return": true,
+    "braces": true,
+    "new_with_braces": {
+      "anonymous_class": true,
+      "named_class": true
+    },
+    "binary_operator_spaces": {
+      "operators": {
+        "=>": "align_single_space_minimal",
+        "=": "align_single_space_minimal",
+        "==": "align_single_space_minimal",
+        "===": "align_single_space_minimal"
+      }
+    }
+  }
 
 }

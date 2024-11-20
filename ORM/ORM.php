@@ -14,6 +14,10 @@ class DB
 
     private static $limit;
 
+    private static $distinct = false;
+
+    private static $columns = '*';
+
     private $data = [];
 
     public function __construct()
@@ -24,13 +28,35 @@ class DB
 
     public static function Table($table)
     {
-        self::$table = $table;
-        self::$query = '';
+        self::$table    = $table;
+        self::$query    = '';
+        self::$ORDER    = '';
+        self::$limit    = '';
+        self::$distinct = false;
+        self::$columns  = '*';
 
         return new self();
     }
 
-    public function search($conditions)
+    public function distinct()
+    {
+        self::$distinct = true;
+
+        return $this;
+    }
+
+    public static function select($columns)
+    {
+        if (is_array($columns)) {
+            self::$columns = implode(', ', $columns);
+        } else {
+            self::$columns = $columns;
+        }
+
+        return new self();
+    }
+
+    public static function search($conditions)
     {
         $query = ' WHERE ';
         $first = true;
@@ -43,56 +69,75 @@ class DB
         }
         self::$query .= $query;
 
-        return $this;
+        return new self();
     }
 
-    public function where($column, $value)
+    public static function where($column, $value = null, $operator = '=', $type = 'AND')
     {
-        self::$query .= " WHERE $column = '$value'";
+        if (is_array($column)) {
+            foreach ($column as $col => $val) {
+                if (empty(self::$query)) {
+                    self::$query = " WHERE $col $operator '$val'";
+                } else {
+                    self::$query .= " $type $col $operator '$val'";
+                }
+            }
+        } elseif ($value === null) {
+            if (empty(self::$query)) {
+                self::$query = " WHERE $column";
+            } else {
+                self::$query .= " $type $column";
+            }
+        } else {
+            if (empty(self::$query)) {
+                self::$query = " WHERE $column $operator '$value'";
+            } else {
+                self::$query .= " $type $column $operator '$value'";
+            }
+        }
 
-        return $this;
+        return new self();
     }
 
-    public function orwhere($column, $value)
-    {
-        self::$query .= " OR $column = '$value'";
-
-        return $this;
-    }
-
-    public function andwhere($column, $value)
-    {
-        self::$query .= " AND $column = '$value'";
-
-        return $this;
-    }
-
-    public function orderBy($column, $direction)
+    public static function orderBy($column, $direction)
     {
         self::$ORDER = " ORDER BY $column $direction";
 
-        return $this;
+        return new self();
     }
 
-    public function limit($limit)
+    public static function limit($limit)
     {
         self::$limit = " LIMIT $limit";
 
-        return $this;
+        return new self();
     }
 
-    public function get()
+    public static function first()
     {
-        $stmt = self::$connection->prepare('SELECT * FROM '.
-        self::$table.
-        self::$query.
-        self::$ORDER.
-        self::$limit
+        self::$limit = ' LIMIT 1';
 
-        );
+        return self::get();
+    }
+
+    public static function get()
+    {
+        $selectPart = self::$distinct ? 'SELECT DISTINCT '.self::$columns : 'SELECT '.self::$columns;
+        $sql        = $selectPart.
+            ' FROM '.self::$table.
+            self::$query.
+            self::$ORDER.
+            self::$limit;
+        // echo $sql;
+        $stmt = self::$connection->prepare($sql);
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+        if (count($result) === 1) {
+            return $result[0];
+        }
+    
+        return $result; 
     }
 
     public function __set($name, $value)
@@ -126,7 +171,6 @@ class DB
             }
             $set = rtrim($set, ', ');
             $sql = 'UPDATE '.self::$table." SET $set WHERE $column = :id";
-            echo $sql;
 
             $stmt = self::$connection->prepare($sql);
             foreach ($this->data as $col => $value) {
@@ -142,10 +186,10 @@ class DB
     public function count()
     {
         $stmt = self::$connection->prepare('SELECT COUNT(*) FROM '.
-        self::$table.
-        self::$query.
-        self::$ORDER.
-        self::$limit);
+            self::$table.
+            self::$query.
+            self::$ORDER.
+            self::$limit);
         $stmt->execute();
 
         return $stmt->fetchColumn();
@@ -217,6 +261,6 @@ class DB
         $stmt = self::$connection->prepare($sql);
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 }
