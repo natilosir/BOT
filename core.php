@@ -99,32 +99,4 @@ class bot
 
         return $button;
     }
-
-    public static function displayMessages($chatId)
-    {
-        $messages = db::table('messages')
-            ->where(['receiver_id' => $chatId, 'is_read' => 0])
-            ->get();
-
-        foreach ($messages as $msg) {
-            $senderId = $msg->sender_id;
-            $msgId    = $msg->id;
-
-            $keyboard = json_encode([
-                'inline_keyboard' => [
-                    [['text' => 'Block', 'callback_data' => "block_$senderId"]],
-                    [['text' => 'Reply', 'callback_data' => "reply_$senderId"]],
-                ],
-            ]);
-            $msgContent = ['chat_id' => $chatId, 'reply_markup' => $keyboard];
-            $caption    = '';
-            self::sendMessage($chatId, $caption, $msgContent);
-
-            // Mark message as read
-            DB::Table('messages')->update(['receiver_id' => $chatId], ['is_read', 1]);
-
-            // Notify sender of read receipt
-            self::sendMessage($senderId, 'Your message has been read!');
-        }
-    }
 }
