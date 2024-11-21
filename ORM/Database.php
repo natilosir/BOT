@@ -4,11 +4,11 @@ class Database
 {
     private $host = 'localhost'; // Database host
 
-    private $db_name = ''; // Database name
+    private $db_name = 'natilosi_tbot'; // Database name
 
-    private $username = ''; // Database username
+    private $username = 'natilosi_tbot'; // Database username
 
-    private $password = ''; // Database password
+    private $password = 'qwQW12'; // Database password
 
     private $connection;
 
