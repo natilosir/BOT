@@ -2,6 +2,9 @@
 Script a Bot Telegram
 
 ```bash
+composer require natilosir/BOT
+```
+```bash
 git clone https://github.com/natilosir/BOT/
 ```
 
