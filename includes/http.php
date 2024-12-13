@@ -9,14 +9,14 @@ function http($uri, $array = [], $method = 'POST')
     $method = strtoupper($method);
 
     // Base URL
-    $url = api . $uri;
+    $url = api.$uri;
 
     // Ensure the array is not empty, or use an empty string as query
-    $queryString = is_array($array) && !empty($array) ? http_build_query($array) : '';
+    $queryString = is_array($array) && ! empty($array) ? http_build_query($array) : '';
 
     // Configure URL and method-specific settings
     if ($method === 'GET') {
-        $url .= $queryString ? '?' . $queryString : '';
+        $url .= $queryString ? '?'.$queryString : '';
     } else {
         // Default to POST
         curl_setopt($ch, CURLOPT_POST, 1);

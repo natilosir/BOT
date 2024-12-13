@@ -21,10 +21,10 @@ class Bot
         return new self();
     }
 
-    public static function sendMessage($chat_id, $text, $reply_to_message_id = null, $reply_markup = null)
+    public static function sendMessage($chatID, $text, $reply_to_message_id = null, $reply_markup = null)
     {
         $data_received = [
-            'chat_id' => $chat_id,
+            'chat_id' => $chatID,
             'text'    => $text,
         ];
         if ($reply_markup) {
@@ -37,7 +37,7 @@ class Bot
         return http('sendMessage', $data_received);
     }
 
-    public static function keyboard($chat_id, $text, $reply_to_message_id = null, $resize = true, $one_time = false)
+    public static function keyboard($chatID, $text, $reply_to_message_id = null, $resize = true, $one_time = false)
     {
         $reply_markup = json_encode([
             'keyboard'          => self::$keyboard,
@@ -45,7 +45,7 @@ class Bot
             'one_time_keyboard' => $one_time,
         ]);
 
-        return self::sendMessage($chat_id, $text, $reply_to_message_id, $reply_markup);
+        return self::sendMessage($chatID, $text, $reply_to_message_id, $reply_markup);
     }
 
     public static function button($text)
@@ -55,7 +55,7 @@ class Bot
 }
 
 // Function to handle button actions
-function handleButtonAction($text, $chat_id, $message_id)
+function handleButtonAction($text, $chatID, $message_id)
 {
     switch ($text) {
         case '🔗 به یه ناشناس وصلم کن!':
@@ -87,7 +87,7 @@ function handleButtonAction($text, $chat_id, $message_id)
             break;
 
         default:
-            Bot::sendMessage($chat_id, "متوجه منظورت نشدم!\n\nبه منو اصلی برگشتیم. چه کمکی از دستم بر میاد؟", $message_id);
+            Bot::sendMessage($chatID, "متوجه منظورت نشدم!\n\nبه منو اصلی برگشتیم. چه کمکی از دستم بر میاد؟", $message_id);
             break;
     }
 }
@@ -97,7 +97,7 @@ $content = file_get_contents('php://input'); // Get incoming update
 $update  = json_decode($content, true); // Decode the JSON update
 
 if (isset($update['message'])) {
-    $chat_id    = $update['message']['chat']['id']; // Dynamic chat ID of the user
+    $chatID     = $update['message']['chat']['id']; // Dynamic chat ID of the user
     $text       = $update['message']['text']; // Command or message text
     $message_id = $update['message']['message_id']; // ID of the user's message
 
@@ -122,8 +122,8 @@ if (isset($update['message'])) {
             ]);
 
         $welcomeText = "حله!\n\nچه کاری برات انجام بدم؟";
-        Bot::keyboard($chat_id, $welcomeText, $message_id); // Reply with a keyboard
+        Bot::keyboard($chatID, $welcomeText, $message_id); // Reply with a keyboard
     } else {
-        handleButtonAction($text, $chat_id, $message_id); // Handle button actions
+        handleButtonAction($text, $chatID, $message_id); // Handle button actions
     }
 }

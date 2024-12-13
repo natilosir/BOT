@@ -44,10 +44,10 @@ class Bot
         return $button;
     }
 
-    public static function sendMessage($chat_id, $text, $reply_markup = null)
+    public static function sendMessage($chatID, $text, $reply_markup = null)
     {
         $data = [
-            'chat_id' => $chat_id,
+            'chat_id' => $chatID,
             'text'    => $text,
         ];
         if ($reply_markup) {
@@ -62,11 +62,11 @@ class Bot
         return $response;
     }
 
-    public static function inline($chat_id, $text)
+    public static function inline($chatID, $text)
     {
         $reply_markup = json_encode(['inline_keyboard' => self::$keyboard]);
 
-        return self::sendMessage($chat_id, $text, $reply_markup);
+        return self::sendMessage($chatID, $text, $reply_markup);
     }
 }
 
@@ -82,18 +82,18 @@ if ($update) {
     $message = $update['message'] ?? null;
 
     if ($message) {
-        $chatId = $message['chat']['id'];
+        $chatID = $message['chat']['id'];
         $text   = $message['text'] ?? 'No text provided';
 
         // Debug chat data
-        debug(['Chat ID' => $chatId, 'Message Text' => $text]);
+        debug(['Chat ID' => $chatID, 'Message Text' => $text]);
 
         if ($text === '/start') {
             // Send a welcome message
-            Bot::sendMessage($chatId, 'Welcome to the bot!');
+            Bot::sendMessage($chatID, 'Welcome to the bot!');
         } else {
             // Send an acknowledgment for other messages
-            Bot::sendMessage($chatId, 'You said: '.$text);
+            Bot::sendMessage($chatID, 'You said: '.$text);
         }
     }
 } else {
