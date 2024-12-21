@@ -1,3 +1,3 @@
 <?php
 
-            bot::sendMessage($chatID, 'You selected Option 1.');
+bot::sendMessage($chatID, 'You selected Option 1.');

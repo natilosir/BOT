@@ -1,6 +1,8 @@
 <?php
-function setupErrorHandling() {
-    $logFilePath = __DIR__ . '/error.txt';
+
+function setupErrorHandling()
+{
+    $logFilePath = __DIR__.'/error.txt';
     if (file_exists($logFilePath)) {
         unlink($logFilePath);
     }
@@ -11,24 +13,25 @@ function setupErrorHandling() {
     ini_set('error_log', $logFilePath);
 }
 
-function processLogFile() {
-    $logFilePath = __DIR__ . '/error.txt';
+function processLogFile()
+{
+    $logFilePath = __DIR__.'/error.txt';
 
     if (file_exists($logFilePath)) {
-        $content = file_get_contents($logFilePath);
-        $lines = explode("\n", $content);
+        $content        = file_get_contents($logFilePath);
+        $lines          = explode("\n", $content);
         $processedLines = [];
 
         foreach ($lines as $line) {
             // استخراج و نگهداری فقط زمان از تاریخ
-            $line = preg_replace_callback('/^\[(\d{2}-\w{3}-\d{4}\s)(\d{2}:\d{2}:\d{2})(\s[A-Za-z\/]+)\]\s/', function($matches) {
-                return $matches[2] . ' '; // فقط زمان باقی بماند
+            $line = preg_replace_callback('/^\[(\d{2}-\w{3}-\d{4}\s)(\d{2}:\d{2}:\d{2})(\s[A-Za-z\/]+)\]\s/', function ($matches) {
+                return $matches[2].' '; // فقط زمان باقی بماند
             }, $line);
 
             // حذف عبارت PHP Notice:
             $line = preg_replace('/PHP Notice:\s*/', '', $line);
 
-            if (!empty(trim($line))) {
+            if (! empty(trim($line))) {
                 $processedLines[] = $line;
             }
         }
@@ -49,7 +52,7 @@ class Route
     {
         self::$keyboard = [];
     }
-    
+
     public static function add($patterns, $action)
     {
         if (! is_array($patterns)) {
@@ -78,8 +81,7 @@ class Route
 
         if (empty($input)) {
             return false;
-        }
-        else {
+        } else {
             error_log("input: $input");
             if (isset(self::$routes[$input])) {
                 $action = self::$routes[$input];
@@ -91,7 +93,7 @@ class Route
                 } else {
                 }
             } else {
-                    // error_log("default route: self::$action");
+                // error_log("default route: self::$action");
                 include_once self::$default;
             }
         }

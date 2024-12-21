@@ -19,7 +19,9 @@ $nachricht = '<b>برای اینکه بتونم به مخاطب خاصت بطو�
 
 ';
 
+$update = DB::table('users')->update(['tel_id' => $fromID], ['check_id' => 1]);
+
 // Send the initial message
-bot::sendMessage($chatID, $nachricht, $message_id);
-$message_id = $message_id + 2;
-require_once 'default.php';
+if ($update) {
+    bot::sendMessage($chatID, $nachricht, $message_id);
+}

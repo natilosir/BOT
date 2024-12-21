@@ -14,6 +14,8 @@ class DB
 
     private static $limit;
 
+    private static $json;
+
     private static $distinct = false;
 
     private static $columns = '*';
@@ -136,11 +138,23 @@ class DB
         return new self();
     }
 
+    public static function json()
+    {
+        self::$json = '1';
+
+        return new self();
+    }
+
     public static function first()
     {
         self::$limit = ' LIMIT 1';
+        $result      = self::get();
 
-        return self::get();
+        if (self::$json) {
+            return json_encode($result);
+        }
+
+        return $result;
     }
 
     public static function get()
@@ -163,6 +177,10 @@ class DB
         $result = $stmt->fetchAll(PDO::FETCH_OBJ);
         if (count($result) === 1) {
             return $result[0];
+        }
+
+        if (self::$json) {
+            $result = json_encode($result);
         }
 
         return $result;

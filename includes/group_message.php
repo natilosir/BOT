@@ -1,16 +1,10 @@
 <?php
 
 // Define the inline keyboard using a single column layout
-$reponde = Bot::row([[
+Bot::row([[
     'text' => ' ➕ اضافه کردن ربات به گروه ➕',
-    'url'  => 'https://t.me/Thekodamabot?startgroup=true',
-],
-])
-    ->row([
-        [
-            'text'          => '💭 آپدیت لیست گروه‌ها 💭',
-            'callback_data' => 'updategp',
-        ]]);
+    'url'  => 'https://t.me/Thekodamabot?startgroup=true']]);
+Bot::row([bot::column('💭 آپدیت لیست گروه‌ها 💭', 'updategp')]);
 
 function handleAddGroup($userId, $groupName)
 {
