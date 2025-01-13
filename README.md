@@ -17,7 +17,7 @@ git clone https://github.com/natilosir/BOT/
   - eloquent
   - search
 
-- [Error log](https://github.com/natilosir/BOT/blob/main/error.txt)
+- [Error log](https://github.com/natilosir/BOT/blob/main/error.txt) Advanced error management and storing logs in a separate file for every request to the server.
 - [Route Class](https://github.com/natilosir/BOT/blob/main/Router.php)
 - [Object Method api telegram](https://github.com/natilosir/BOT/blob/main/core.php)
    - [HTTP request](https://github.com/natilosir/BOT/blob/main/includes/http.php)
