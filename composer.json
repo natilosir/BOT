@@ -1,5 +1,5 @@
 {
-  "name": "natilosir/BOT",
+  "name": "natilosir/bot",
   "description": "A simple PHP library for managing Jalali (Shamsi) dates.",
   "type": "library",
   "license": "MIT",
