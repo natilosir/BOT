@@ -1,8 +1,16 @@
 {
-    "require-dev": {
-        "laravel/pint": "^1.18"
-    },
-  "require": {
-    "ext-json": "*"
+  "name": "natilosir/BOT",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Natilos.ir",
+      "email": "info@natilos.ir"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Natilosir\\bot\\": "src/"
+    }
   }
 }
