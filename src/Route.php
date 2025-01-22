@@ -47,12 +47,12 @@ class Route
 
         if (empty($action)) {
             lg("input: $input");
-            return include_once $default;
+            return include_once "controller/".$default.".php";
         }
 
-        elseif (is_string($action) && file_exists($action)) {
-            lg("Route: '$input' => '".$action."'");
-            return include_once $action;
+        elseif (is_string($action) && file_exists("controller/".$action.".php")) {
+            lg("Route: '$input' => 'controller/".$action.".php'");
+            return include_once "controller/".$action.".php";
         } elseif (is_callable($action)) {
             lg("func: $input");
             return call_user_func($action);

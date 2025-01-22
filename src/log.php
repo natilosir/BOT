@@ -2,7 +2,7 @@
 
 function setupErrorHandling()
 {
-    $logFilePath = __DIR__.'\..\..\..\..\error.txt';
+    $logFilePath = __DIR__.'/../../../../error.txt';
     if (file_exists($logFilePath)) {
         unlink($logFilePath);
     }
@@ -28,7 +28,7 @@ function lg($data) {
 
 function processLogFile()
 {
-    $logFilePath = __DIR__.'\..\..\..\..\error.txt';
+    $logFilePath = __DIR__.'/../../../../error.txt';
 
     if (file_exists($logFilePath)) {
         $content        = file_get_contents($logFilePath);
