@@ -20,8 +20,8 @@ if (is_dir($sourceDir)) {
     }
 
     rmdir($sourceDir);
-    echo "تمام فایل‌ها و پوشه‌ها به ../../ منتقل شدند و پوشه telegram-bot-sdk حذف شد.";
+    echo "The application is ready to run. Please read the documentation.";
 } else {
-    echo "پوشه منبع وجود ندارد.";
+    echo "ERROR";
 }
 ?>
