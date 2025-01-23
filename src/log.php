@@ -12,14 +12,15 @@ function setupErrorHandling()
     ini_set('log_errors', 'On');
     ini_set('error_log', $logFilePath);
 }
-function lg($data) {
+function lg($data)
+{
     if (is_object($data)) {
         $dataArray = json_decode(json_encode($data), true);
         error_log(print_r($dataArray, true));
     } elseif (is_array($data)) {
         ob_start();
-        var_dump($data); 
-        $output = ob_get_clean(); 
+        var_dump($data);
+        $output = ob_get_clean();
         error_log($output);
     } else {
         error_log($data);

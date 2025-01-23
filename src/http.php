@@ -1,5 +1,6 @@
 <?php
-$config = require __DIR__ . '/../../../../config.php'; 
+
+$config    = require __DIR__.'/../../../../config.php';
 $BOT_TOKEN = $config['bot']['token'];
 define('api', 'https://api.telegram.org/bot'.$BOT_TOKEN.'/');
 
