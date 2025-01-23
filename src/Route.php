@@ -55,7 +55,7 @@ class Route
             lg("Route: '$input' => 'controller/".rc($action).".php'");
             return include_once "controller/".rc($action).".php";   
             }else{
-            lg("The root file was not found => 'controller/".rc($action).".php'  404 not found");
+            lg("The controller file was not found => 'controller/".rc($action).".php'  404 not found");
             }
         } elseif (is_callable($action)) {
             lg("func: $input");
