@@ -1,27 +1,22 @@
 <?php
 
 if (isset($_GET['file'])) {
-    // دریافت آدرس فایل از پارامتر 'file'
+    header('Content-Type: text/plain');
     $fileUrl = $_GET['file'];
 
-    // ساخت مسیر نهایی با توجه به نام فایل
     if ($fileUrl !== 'df') {
-        $filePath = '../../../'.$fileUrl;
+        $filePath = '../../../' . $fileUrl;
     } else {
         $filePath = 'route.php';
     }
 
-    // بررسی امنیت مسیر فایل (برای جلوگیری از دسترسی به فایل‌های غیرمجاز)
-    $resolvedPath   = realpath($filePath);
-    $allowedBaseDir = realpath(__DIR__.'/../../../'); // مسیر پایه مجاز
+    $resolvedPath = realpath($filePath);
+    $allowedBaseDir = realpath(__DIR__ . '/../../../');
 
-    // اگر فایل موجود باشد و داخل مسیر مجاز باشد
     if ($resolvedPath && strpos($resolvedPath, $allowedBaseDir) === 0 && file_exists($filePath)) {
-        // بررسی اینکه فایل دارای محتوا باشد
         if (filesize($filePath) > 0) {
-            // باز کردن فایل و نمایش محتوای آن
             $fileHandle = fopen($filePath, 'r');
-            while (! feof($fileHandle)) {
+            while (!feof($fileHandle)) {
                 echo fgets($fileHandle);
             }
             fclose($fileHandle);
@@ -31,6 +26,65 @@ if (isset($_GET['file'])) {
     } else {
         http_response_code(403);
     }
+} elseif (isset($_GET['folder'])) {
+    date_default_timezone_set('Asia/Tehran'); // تنظیم منطقه زمانی
+
+    $folderUrl = explode('/', trim($_GET['folder'], '/'));
+    
+    if (count($folderUrl) > 0) {
+        if (strpos(end($folderUrl), '.') !== false) {
+            array_pop($folderUrl); 
+        }
+    }
+
+    $folderPath = '../../../' . implode('/', $folderUrl);
+
+    if (is_dir($folderPath)) {
+        $files = scandir($folderPath);
+        $result[] = [
+            'name' => '../',
+            'slug' => implode('/', array_slice($folderUrl, 0, -1)), // اصلاح شده
+            'type' => true
+        ];
+
+        foreach ($files as $file) {
+            if ($file !== '.' && $file !== '..') {
+                $filePath = $folderPath . '/' . $file;
+                if (is_dir($filePath)) {
+                    $result[] = [
+                        'name' => $file,
+                        'slug' => implode('/', $folderUrl) . '/' . $file,
+                        'type' => true
+                    ];
+                }
+            }
+        }
+
+        foreach ($files as $file) {
+            if ($file !== '.' && $file !== '..') {
+                $filePath = $folderPath . '/' . $file;
+                if (!is_dir($filePath)) {
+                    $result[] = [
+                        'name' => $file,
+                        'slug' => implode('/', $folderUrl) . '/' . $file,
+                        'type' => false
+                    ];
+                }
+            }
+        }
+
+        $result = array_map(function($item) {
+            $item['slug'] = preg_replace('/\/+/', '/', $item['slug']);
+            return $item;
+        }, $result);
+
+    
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
+
+    } else {
+        http_response_code(403);
+    }
 } else {
     http_response_code(403);
 }
+?>
