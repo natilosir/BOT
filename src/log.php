@@ -62,7 +62,7 @@ class AdvancedLogger {
             <html lang="fa" dir="rtl">
             <head>
                 <meta charset="UTF-8">
-                <title>سیستم لاگ پیشرفته</title>
+                <title>LOG</title>
             <style>
                 * {
                     margin: 0;
