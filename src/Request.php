@@ -3,6 +3,73 @@
 namespace natilosir\bot;
 
 class Request {
+    public $updateId;
+    public $request;
+    public $updateType;
+
+    // Common fields
+    public $chatID;
+    public $fromID;
+    public $firstName;
+    public $lastName;
+    public $username;
+    public $date;
+    public $text;
+    public $message_id;
+    public $entities;
+    public $caption;
+
+    // Message specific
+    public $photo;
+    public $audio;
+    public $document;
+    public $video;
+    public $voice;
+    public $contact;
+    public $location;
+    public $venue;
+    public $sticker;
+    public $animation;
+    public $dice;
+    public $new_chat_members;
+    public $left_chat_member;
+    public $new_chat_title;
+    public $new_chat_photo;
+    public $pinned_message;
+    public $reply_to_message;
+    public $query_id;
+    public $callbackData;
+
+    // Callback query specific
+    public $inline_query_id;
+    public $query;
+
+    // Inline query specific
+    public $offset;
+    public $shipping_query_id;
+    public $invoice_payload;
+
+    // Shipping query specific
+    public $shipping_address;
+    public $pre_checkout_query_id;
+    public $currency;
+
+    // Pre-checkout query specific
+    public $total_amount;
+    public $order_info;
+    public $poll_id;
+    public $question;
+
+    // Poll specific
+    public $options;
+    public $total_voter_count;
+    public $is_closed;
+    public $is_anonymous;
+    public $old_chat_member;
+    public $new_chat_member;
+
+    // Chat member updates
+    public  $invite_link;
     private $data;
     private $updateTypes = [
         'message',
@@ -21,78 +88,18 @@ class Request {
         'chat_join_request',
     ];
 
-    // Common fields
-    public $updateId;
-    public $updateType;
-    public $chatID;
-    public $fromID;
-    public $firstName;
-    public $lastName;
-    public $username;
-    public $date;
-    public $text;
-    public $message_id;
-
-    // Message specific
-    public $entities;
-    public $caption;
-    public $photo;
-    public $audio;
-    public $document;
-    public $video;
-    public $voice;
-    public $contact;
-    public $location;
-    public $venue;
-    public $sticker;
-    public $animation;
-    public $dice;
-    public $new_chat_members;
-    public $left_chat_member;
-    public $new_chat_title;
-    public $new_chat_photo;
-    public $pinned_message;
-    public $reply_to_message;
-
-    // Callback query specific
-    public $query_id;
-    public $callbackData;
-
-    // Inline query specific
-    public $inline_query_id;
-    public $query;
-    public $offset;
-
-    // Shipping query specific
-    public $shipping_query_id;
-    public $invoice_payload;
-    public $shipping_address;
-
-    // Pre-checkout query specific
-    public $pre_checkout_query_id;
-    public $currency;
-    public $total_amount;
-    public $order_info;
-
-    // Poll specific
-    public $poll_id;
-    public $question;
-    public $options;
-    public $total_voter_count;
-    public $is_closed;
-    public $is_anonymous;
-
-    // Chat member updates
-    public $old_chat_member;
-    public $new_chat_member;
-    public $invite_link;
-
     public function __construct() {
         $this->data = json_decode(file_get_contents('php://input'), true);
         $this->parseRequest();
     }
 
     private function parseRequest() {
+        if ( !empty($this->data['route']) ) {
+            $this->text    = $this->data['route'];
+            $this->request = (object) $this->data['data'];
+            $this->data    = null;
+        }
+
         $this->updateId = $this->data['update_id'] ?? null;
 
         foreach ( $this->updateTypes as $type ) {
@@ -107,8 +114,100 @@ class Request {
         }
     }
 
-    private function parseMessage( array $message ) {
-        $this->text       = $message['text'] ?? null;
+    public function getInput(): string {
+        if ( $this->updateType === 'callback_query' ) {
+            return $this->callbackData ?? '';
+        }
+        elseif ( $this->updateType === 'inline_query' ) {
+            return $this->query ?? '';
+        }
+        return $this->text ?? '';
+    }
+
+    public function getUpdateType(): string {
+        return $this->updateType ?? '';
+    }
+
+    public function getRawData(): array {
+        return $this->data;
+    }
+
+    public function toJson(): string {
+        return json_encode($this->toArray());
+    }
+
+    public function toArray(): array {
+        $result = [];
+
+        $publicProperties = get_object_vars($this);
+
+        foreach ( $publicProperties as $property => $value ) {
+            if ( $property === 'data' || $property === 'updateTypes' ) {
+                continue;
+            }
+
+            if ( $this->isValueNotEmpty($value) ) {
+                $result[$property] = $value;
+            }
+        }
+
+        return $result;
+    }
+
+    private function isValueNotEmpty( $value ): bool {
+        if ( $value === null || $value === '' ) {
+            return false;
+        }
+
+        if ( is_array($value) && empty($value) ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function dd(): string {
+        return dd($this->toArray());
+    }
+
+    public function lg(): string {
+        return lg($this->toArray());
+    }
+
+    public function getCommand(): string {
+        if ( !$this->isCommand() ) {
+            return '';
+        }
+
+        foreach ( $this->entities as $entity ) {
+            if ( $entity['type'] === 'bot_command' && $entity['offset'] === 0 ) {
+                return substr($this->text, $entity['offset'], $entity['length']);
+            }
+        }
+
+        return '';
+    }
+
+    public function isCommand(): bool {
+        if ( empty($this->entities) ) {
+            return false;
+        }
+
+        foreach ( $this->entities as $entity ) {
+            if ( $entity['type'] === 'bot_command' && $entity['offset'] === 0 ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function parseEditedmessage( array $message ) {
+        $this->parseMessage($message);
+    }
+
+    private function parseMessage( $message ) {
+        $this->text       = $message['text'] ?? $this->data['text'] ?? null;
         $this->chatID     = $message['chat']['id'] ?? null;
         $this->fromID     = $message['from']['id'] ?? null;
         $this->firstName  = $message['from']['first_name'] ?? null;
@@ -137,10 +236,6 @@ class Request {
         $this->new_chat_photo   = $message['new_chat_photo'] ?? null;
         $this->pinned_message   = $message['pinned_message'] ?? null;
         $this->reply_to_message = $message['reply_to_message'] ?? null;
-    }
-
-    private function parseEditedmessage( array $message ) {
-        $this->parseMessage($message);
     }
 
     private function parseChannelpost( array $message ) {
@@ -213,6 +308,10 @@ class Request {
         $this->option_ids = $pollAnswer['option_ids'] ?? null;
     }
 
+    private function parseChatmember( array $chatMemberUpdate ) {
+        $this->parseMychatmember($chatMemberUpdate);
+    }
+
     private function parseMychatmember( array $chatMemberUpdate ) {
         $this->chatID          = $chatMemberUpdate['chat']['id'] ?? null;
         $this->fromID          = $chatMemberUpdate['from']['id'] ?? null;
@@ -221,103 +320,11 @@ class Request {
         $this->new_chat_member = $chatMemberUpdate['new_chat_member'] ?? null;
     }
 
-    private function parseChatmember( array $chatMemberUpdate ) {
-        $this->parseMychatmember($chatMemberUpdate);
-    }
-
     private function parseChatjoinrequest( array $chatJoinRequest ) {
         $this->chatID      = $chatJoinRequest['chat']['id'] ?? null;
         $this->fromID      = $chatJoinRequest['from']['id'] ?? null;
         $this->date        = $chatJoinRequest['date'] ?? null;
         $this->bio         = $chatJoinRequest['bio'] ?? null;
         $this->invite_link = $chatJoinRequest['invite_link'] ?? null;
-    }
-
-    public function getInput(): string {
-        if ( $this->updateType === 'callback_query' ) {
-            return $this->callbackData ?? '';
-        }
-        elseif ( $this->updateType === 'inline_query' ) {
-            return $this->query ?? '';
-        }
-        return $this->text ?? '';
-    }
-
-    public function getUpdateType(): string {
-        return $this->updateType ?? '';
-    }
-
-    public function getRawData(): array {
-        return $this->data;
-    }
-
-    public function isCommand(): bool {
-        if ( empty($this->entities) ) {
-            return false;
-        }
-
-        foreach ( $this->entities as $entity ) {
-            if ( $entity['type'] === 'bot_command' && $entity['offset'] === 0 ) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function toArray(): array {
-        $result = [];
-
-        $publicProperties = get_object_vars($this);
-
-        foreach ( $publicProperties as $property => $value ) {
-            if ( $property === 'data' || $property === 'updateTypes' ) {
-                continue;
-            }
-
-            if ( $this->isValueNotEmpty($value) ) {
-                $result[$property] = $value;
-            }
-        }
-
-        return $result;
-    }
-
-    private function isValueNotEmpty( $value ): bool {
-        if ( $value === null || $value === '' ) {
-            return false;
-        }
-
-        if ( is_array($value) && empty($value) ) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function toJson(): string {
-        return json_encode($this->toArray());
-    }
-
-    public function dd(): string {
-        return dd($this->toArray());
-    }
-
-    public function lg(): string {
-        return lg($this->toArray());
-    }
-
-    public function getCommand(): string {
-        if ( !$this->isCommand() ) {
-            return '';
-        }
-
-        foreach ( $this->entities as $entity ) {
-            if ( $entity['type'] === 'bot_command' && $entity['offset'] === 0 ) {
-                return substr($this->text, $entity['offset'], $entity['length']);
-            }
-        }
-
-        return '';
     }
 }
