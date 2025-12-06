@@ -48,21 +48,40 @@ class bot {
         return http('answerCallbackQuery', $data);
     }
 
-    public static function sendMessage( $chatID, $text, $reply_to_message_id = null, $reply_markup = null ) {
+    public static function sendPhoto( $chatID, $caption = null, $photo = null, $reply_to_message_id = null, $reply_markup = null ) {
+        $data = [
+            'chat_id' => $chatID,
+        ];
+
+        if ( $caption ) {
+            $data['caption'] = $caption;
+        }
+        if ( $reply_to_message_id ) {
+            $data['reply_to_message_id'] = $reply_to_message_id;
+        }
+        if ( $reply_markup ) {
+            $data['reply_markup'] = $reply_markup;
+        }
+        if ( $photo ) {
+            $data['photo'] = $photo;
+        }
+
+        return http('sendPhoto', $data);
+    }
+
+    public static function editPhotoCaption( $chatID, $message_id, $caption, $reply_markup = null ) {
         $data = [
             'chat_id'    => $chatID,
-            'text'       => $text,
+            'message_id' => $message_id,
+            'caption'    => $caption,
             'parse_mode' => 'HTML',
         ];
 
         if ( $reply_markup ) {
             $data['reply_markup'] = $reply_markup;
         }
-        if ( $reply_to_message_id ) {
-            $data['reply_to_message_id'] = $reply_to_message_id;
-        }
 
-        return http('sendMessage', $data);
+        return http('editMessageCaption', $data);
     }
 
     public static function forwardMessage( $chatID, $from_chat_id, $message_id ) {
@@ -73,6 +92,42 @@ class bot {
         ];
 
         return http('forwardMessage', $data);
+    }
+
+    public static function deleteMessage( $chatID, $message_id ) {
+        $data = [
+            'chat_id'    => $chatID,
+            'message_id' => $message_id,
+        ];
+
+        return http('deleteMessage', $data);
+    }
+
+    public static function inline( $chatID, $second_OR_text, $message_id, $copy = false ) {
+        $reply_markup = json_encode([ 'inline_keyboard' => self::$keyboard ]);
+
+        if ( $copy === 'edit' ) {
+            return self::editMessageReplyMarkup($chatID, $message_id, $reply_markup);
+        }
+        if ( $copy ) {
+            return self::copyMessage($chatID, $second_OR_text, $message_id, $reply_markup);
+        }
+        else {
+            return self::sendMessage($chatID, $second_OR_text, $message_id, $reply_markup);
+        }
+    }
+
+    public static function editMessageReplyMarkup( $chatID, $message_id, $reply_markup = null ) {
+        $data = [
+            'chat_id'    => $chatID,
+            'message_id' => $message_id,
+        ];
+
+        if ( $reply_markup ) {
+            $data['reply_markup'] = $reply_markup;
+        }
+
+        return http('editMessageReplyMarkup', $data);
     }
 
     public static function copyMessage( $chatID, $second_chat_id, $message_id, $reply_markup = null ) {
@@ -89,40 +144,21 @@ class bot {
         return http('copyMessage', $data);
     }
 
-    public static function deleteMessage( $chatID, $message_id ) {
+    public static function sendMessage( $chatID, $text, $reply_to_message_id = null, $reply_markup = null ) {
         $data = [
             'chat_id'    => $chatID,
-            'message_id' => $message_id,
-        ];
-
-        return http('deleteMessage', $data);
-    }
-
-    public static function editMessageReplyMarkup( $chatID, $message_id, $reply_markup = null ) {
-        $data = [
-            'chat_id'    => $chatID,
-            'message_id' => $message_id,
+            'text'       => $text,
+            'parse_mode' => 'HTML',
         ];
 
         if ( $reply_markup ) {
             $data['reply_markup'] = $reply_markup;
         }
-
-        return http('editMessageReplyMarkup', $data);
-    }
-
-    public static function inline( $chatID, $second_OR_text, $message_id, $copy = false ) {
-        $reply_markup = json_encode([ 'inline_keyboard' => self::$keyboard ]);
-
-        if ( $copy === 'edit' ) {
-            return self::editMessageReplyMarkup($chatID, $message_id, $reply_markup);
+        if ( $reply_to_message_id ) {
+            $data['reply_to_message_id'] = $reply_to_message_id;
         }
-        if ( $copy ) {
-            return self::copyMessage($chatID, $second_OR_text, $message_id, $reply_markup);
-        }
-        else {
-            return self::sendMessage($chatID, $second_OR_text, $message_id, $reply_markup);
-        }
+
+        return http('sendMessage', $data);
     }
 
     public static function keyboard( $chatID, $second_OR_text, $message_id, $copy = false, $resize = true, $one_time = false ) {

@@ -74,7 +74,7 @@ class State {
     public static function set( string $state ) {
         try {
             $userId = ( new Request() )->fromID;
-            User::Update([ 'user_id' => $userId ], [ 'state' => $state ]);
+            User::where('user_id', $userId)->update(['state' => $state]);
         } catch ( \Exception $e ) {
             lg("Error setting user state: " . $e->getMessage());
         }

@@ -27,9 +27,7 @@ class Route {
         $input         = self::normalizeInput(self::$request->text);
         lg("Request Input: " . $input);
 
-        //         1. سپس مسیرهای تعریف شده را بررسی می‌کنیم
         if ( !empty($input) && isset(self::$routes[$input]) ) {
-            // اگر مسیر state داشته باشد
             if ( isset(self::$states[$input]) ) {
                 State::set(self::$states[$input]);
                 self::$configclear = false;
@@ -38,11 +36,9 @@ class Route {
             return;
         }
 
-        // 2. ابتدا State را بررسی می‌کنیم
         require_once __DIR__ . '/../../../../Router/state.php';
         State::init();
 
-        // 3. در نهایت متد پیش‌فرض
         if ( self::$default ) {
             self::runAction(self::$default, self::$request);
             return;
@@ -80,12 +76,22 @@ class Route {
         self::$routes[self::normalizeInput($uri)] = $action;
     }
 
+    public static function response( $data = [], $status = 200 ) {
+        http_response_code($status);
+        header("Content-Type: application/json; charset=utf-8");
+        echo json_encode([
+            'status' => $status,
+            'data'   => $data,
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     public static function registerState( $uri, $stateName ) {
         self::$states[self::normalizeInput($uri)] = $stateName;
     }
 
     private static function normalizeInput( $input ) {
-        $normalized = trim($input);
+        $normalized = is_string($input) ? trim($input) : '';
         $normalized = str_replace([ 'ي', 'ك' ], [ 'ی', 'ک' ], $normalized);
         $normalized = preg_replace('/\s+/', ' ', $normalized);
         return $normalized;

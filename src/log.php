@@ -2,6 +2,9 @@
 
 namespace natilosir\bot;
 
+use ReflectionClass;
+use Throwable;
+
 date_default_timezone_set('Asia/Tehran');
 header('Content-Type: text/html; charset=utf-8');
 mb_internal_encoding('UTF-8');
@@ -9,7 +12,8 @@ mb_internal_encoding('UTF-8');
 class AdvancedLogger {
     public static $instance;
     public        $logFilePath;
-    public        $logLevels = [
+
+    public $logLevels = [
         E_ERROR             => 'ERROR',
         E_WARNING           => 'WARNING',
         E_PARSE             => 'PARSE',
@@ -32,539 +36,467 @@ class AdvancedLogger {
         $this->initialize();
     }
 
-    public static function getInstance() {
-        if ( !self::$instance ) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
-
-    public function initialize() {
+    public function initialize(): void {
         if ( file_exists($this->logFilePath) ) {
             @unlink($this->logFilePath);
         }
 
         error_reporting(E_ALL);
         ini_set('display_errors', '0');
-        ini_set('log_errors', '1');
-        ini_set('error_log', $this->logFilePath);
-
         set_error_handler([ $this, 'errorHandler' ]);
         set_exception_handler([ $this, 'exceptionHandler' ]);
         register_shutdown_function([ $this, 'shutdownHandler' ]);
 
         $this->createLogFile();
     }
+    private function createLogFile(): void
+    {
+        $html = <<<HTML
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Log</title>
 
-    public function createLogFile() {
-        $htmlHeader = <<<HTML
-            <!DOCTYPE html>
-            <html lang="fa" dir="rtl">
-            <head>
-                <meta charset="UTF-8">
-                <title>LOG</title>
-            <style>
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-                }
-            
-                @font-face {
-                    font-family: 'FiraCode';
-                    src: url('https://dl.natilos.ir/ffff/FiraCode-Medium.woff2') format('woff2');
-                    font-weight: normal;
-                    font-style: normal;
-                }
-            
-                @font-face {
-                    font-family: 'IRANSans';
-                    src: url('https://natilos.ir/zimage/font/is.woff') format('woff2');
-                    font-weight: normal;
-                    font-style: normal;
-                }
-            
-                body {
-                    font-family: 'FiraCode', Tahoma, sans-serif;
-                    color: #f0f0f0;
-                    padding: 20px;
-                    line-height: 1.6;
-                    background: linear-gradient(145deg, #0f051f, #1a0b2e, #2a0b4a);
-                    background-size: 400% 400%;
-                    animation: gradientFlow 18s ease infinite;
-                    min-height: 100vh;
-                }
-            
-                @keyframes gradientFlow {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                }
-            
-                h1 {
-                    color: #d9b8ff;
-                    text-align: center;
-                    margin: 25px 0 30px;
-                    font-size: 2.4rem;
-                    text-shadow: 0 2px 8px rgba(217, 184, 255, 0.15);
-                    position: relative;
-                    padding-bottom: 10px;
-                }
-            
-                h1::after {
-                    content: '';
-                    position: absolute;
-                    bottom: 0;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    width: 120px;
-                    height: 3px;
-                    background: linear-gradient(90deg, transparent, #9d4edd, transparent);
-                    border-radius: 3px;
-                }
-            
-                .log-container {
-                    max-width: 900px;
-                    margin: 0 auto;
-                    padding: 15px;
-                }
-            
-                .log-entry {
-                    background: linear-gradient(145deg, rgba(15, 5, 31, 0.85), rgba(26, 11, 46, 0.9));
-                    border-left: 4px solid #7b2cbf;
-                    margin: 18px 0;
-                    padding: 18px;
-                    border-radius: 8px;
-                    direction: ltr;
-                    font-family: FiraCode;
-                    font-size: 14px;
-                    overflow-x: auto;
-                    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
-                    backdrop-filter: blur(4px);
-                    border-top: 1px solid rgba(157, 78, 221, 0.1);
-                    transition: transform 0.3s, box-shadow 0.3s;
-                }
-            
-                .log-entry:hover {
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 16px rgba(123, 44, 191, 0.3);
-                    border-left: 4px solid #9d4edd;
-                    background: linear-gradient(145deg, rgba(20, 8, 41, 0.9), rgba(33, 13, 61, 0.95));
-                }
-            
-                .log-entry.error {
-                    border-left-color: #ff1a1a;
-                    background: linear-gradient(145deg, rgba(40, 5, 15, 0.9), rgba(60, 10, 20, 0.95));
-                }
-            
-                .log-entry.error:hover {
-                    border-left-color: #ff3333;
-                    box-shadow: 0 8px 16px rgba(255, 51, 51, 0.25);
-                    animation: errorPulse 2.5s infinite;
-                }
-            
-                @keyframes errorPulse {
-                    0% { box-shadow: 0 6px 12px rgba(255, 26, 26, 0.2); }
-                    50% { box-shadow: 0 6px 18px rgba(255, 26, 26, 0.4); }
-                    100% { box-shadow: 0 6px 12px rgba(255, 26, 26, 0.2); }
-                }
-            
-                .log-entry.warning {
-                    border-left-color: #ffb700;
-                    background: linear-gradient(145deg, rgba(40, 30, 5, 0.9), rgba(60, 45, 10, 0.95));
-                }
-            
-                .log-entry.warning:hover {
-                    border-left-color: #ffcc00;
-                    box-shadow: 0 8px 16px rgba(255, 183, 0, 0.25);
-                }
-            
-                .log-entry.notice {
-                    border-left-color: #3d8eff;
-                    background: linear-gradient(145deg, rgba(5, 15, 40, 0.9), rgba(10, 25, 60, 0.95));
-                }
-            
-                .log-entry.notice:hover {
-                    border-left-color: #4da6ff;
-                    box-shadow: 0 8px 16px rgba(61, 142, 255, 0.25);
-                }
-            
-                .log-entry.debug {
-                    border-left-color: #6eff9e;
-                    background: linear-gradient(145deg, rgba(5, 40, 15, 0.9), rgba(10, 60, 25, 0.95));
-                }
-            
-                .log-entry.debug:hover {
-                    border-left-color: #88ffaa;
-                    box-shadow: 0 8px 16px rgba(110, 255, 158, 0.2);
-                }
-            
-                .log-entry.info {
-                    border-left-color: #9d4edd;
-                    background: linear-gradient(145deg, rgba(30, 5, 40, 0.9), rgba(45, 10, 60, 0.95));
-                }
-            
-                .log-entry.info:hover {
-                    border-left-color: #c77dff;
-                    box-shadow: 0 8px 16px rgba(157, 78, 221, 0.3);
-                }
-            
-                .log-meta {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 12px;
-                    font-size: 0.9rem;
-                }
-            
-                .log-time {
-                    color: #d9b8ff;
-                    position: relative;
-                    padding-left: 18px;
-                }
-            
-                .log-time::before {
-                    content: '';
-                    position: absolute;
-                    left: 0;
-                    top: 14%;
-                    width: 12px;
-                    height: 12px;
-                    background: linear-gradient(135deg, #9d4edd, #7b2cbf);
-                    border-radius: 3px;
-                    opacity: 0.7;
-                }
-            
-                .log-level {
-                    font-weight: bold;
-                    padding: 3px 10px;
-                    border-radius: 15px;
-                }
-            
-                .level-error { 
-                    color: #ff3333;
-                    background: rgba(255, 51, 51, 0.1);
-                    border: 1px solid rgba(255, 51, 51, 0.3);
-                }
-            
-                .level-warning { 
-                    color: #ffb700;
-                    background: rgba(255, 183, 0, 0.1);
-                    border: 1px solid rgba(255, 183, 0, 0.3);
-                }
-            
-                .level-notice { 
-                    color: #3d8eff;
-                    background: rgba(61, 142, 255, 0.1);
-                    border: 1px solid rgba(61, 142, 255, 0.3);
-                }
-            
-                .level-debug { 
-                    color: #6eff9e;
-                    background: rgba(110, 255, 158, 0.1);
-                    border: 1px solid rgba(110, 255, 158, 0.3);
-                }
-            
-                .level-info { 
-                    color: #9d4edd;
-                    background: rgba(157, 78, 221, 0.1);
-                    border: 1px solid rgba(157, 78, 221, 0.3);
-                }
-            
-                .log-content {
-                    white-space: pre-wrap;
-                    margin: 8px 0;
-                }
-            
-                .log-context {
-                    margin-top: 12px;
-                    padding-top: 12px;
-                    border-top: 1px dashed rgba(157, 78, 221, 0.3);
-                }
-            
-                .log-file {
-                    color: #c77dff;
-                    font-weight: 500;
-                }
-            
-                .object-class {
-                    color: #c77dff;
-                    font-weight: bold;
-                }
-            
-                .property-name {
-                    color: #3d8eff;
-                }
-            
-                .string-value {
-                    color: #6eff9e;
-                    font-family: IRANSans !important;
-                }
-            
-                .number-value {
-                    color: #ffb700;
-                }
-            
-                .boolean-value {
-                    color: #ff3333;
-                    font-weight: bold;
-                }
-            
-                .null-value {
-                    color: #888;
-                    font-style: italic;
-                }
-            
-                /* Responsive design */
-                @media (max-width: 768px) {
-                    body {
-                        padding: 15px;
-                    }
-            
-                    h1 {
-                        font-size: 1.8rem;
-                    }
-            
-                    .log-entry {
-                        padding: 15px;
-                    }
-                }
-            </style>
-            </head>
-            <body>
-            HTML;
-
-        file_put_contents($this->logFilePath, $htmlHeader, LOCK_EX);
+    <style>
+    @font-face {
+        font-family: "FiraCode";
+        src: url("https://dl.natilos.ir/ffff/FiraCode-Medium.woff2") format("woff2");
+        font-weight: normal;
+        font-style: normal;
     }
 
-    public function log( $data, $level = 'DEBUG', $context = [], $file = null, $line = null ) {
-        $logLevel = strtoupper($level);
-        $logClass = strtolower($level);
-
-        $content          = $this->formatData($data);
-        $formattedContext = !empty($context) ? $this->formatData($context) : null;
-
-        $timestamp = date('Y-m-d H:i:s');
-        $timePart  = "<span class='log-time'>$timestamp</span>";
-        $levelPart = "<span class='log-level level-$logClass'>$logLevel</span>";
-
-        // افزودن اطلاعات فایل و خط
-        $fileInfo = '';
-        if ( $file && $line ) {
-            $file     = implode('/', array_slice(explode('/', $file), 5));
-            $fileInfo = "<span class='log-file'>File: $file:$line</span>";
-        }
-
-        $logEntry = "<div class='log-entry $logClass'>";
-        $logEntry .= "<div class='log-meta'>$fileInfo $levelPart $timePart</div>";
-        $logEntry .= "<div class='log-content'>$content</div>";
-
-        if ( $formattedContext ) {
-            $logEntry .= "<div class='log-context'><strong>Context:</strong> $formattedContext</div>";
-        }
-
-        $logEntry .= "</div>";
-
-        file_put_contents($this->logFilePath, $logEntry, FILE_APPEND | LOCK_EX);
+    @font-face {
+        font-family: "IRANSans";
+        src: url("https://natilos.ir/zimage/font/is.woff") format("woff2");
+        font-weight: normal;
+        font-style: normal;
     }
 
-    public function formatData( $data, $depth = 0 ) {
-        // محدود کردن عمق برای جلوگیری از لوپ‌های بی‌نهایت
-        if ( $depth > 20 ) {
-            return "<span class='string-value'>[Max depth reached]</span>";
-        }
+    body {font-family: IRANSans; background:#1e1e1e; color:#d4d4d4; margin:0; padding:20px;}
+    .log-entries {direction: ltr; text-align: left;}
+    .log-entry {background:#2c203d; margin:10px 0; padding:15px; border-radius:8px; border-left:4px solid #b48ef7;}
 
-        if ( is_object($data) ) {
-            return $this->formatObject($data, $depth + 1);
+    .log-meta {margin-bottom:10px; font-size:0.9em;}
+    .log-badge {background:#7c3aed;font-family: FiraCode;padding:2px 8px; border-radius:4px; font-weight:bold;}
+    .log-time {margin:0 15px; color:#b3a6ca;font-family: FiraCode}
+    .log-file {color:#c084fc;font-family: FiraCode}
+
+    .log-entry-fatal,
+    .log-entry-error { background:#3b0d0d !important; border-left:4px solid #ff4b4b !important; }
+
+    .log-entry-exception { background:#4a0000 !important; border-left:4px solid #ff1a1a !important; }
+
+    .log-entry-warning {
+        background:#3b320d !important;
+        border-left:4px solid #facc15 !important;
+        color:#fef9c3 !important;
+    }
+
+    .log-entry-info {
+        background:#0d3b1a !important;
+        border-left:4px solid #22c55e !important;
+    }
+
+    .log-entry-default {
+        background:#2c203d !important;
+        border-left:4px solid #b48ef7 !important;
+    }
+
+    .log-badge-error,
+    .log-badge-fatal { background:#ff4b4b !important; }
+
+    .log-badge-exception { background:#ff1a1a !important; color:#fff !important; }
+
+    .log-badge-warning { background:#facc15 !important; color:#000 !important; }
+
+    .log-badge-info { background:#22c55e !important; }
+
+    .array-item { display:flex; align-items:flex-start; gap:10px; }
+    .key-label { color:#ff79c6; font-weight:bold; flex-shrink:0; }
+
+    .arrow::before {
+        content: "⇒";
+        color: #8be9fd;
+        font-weight: bold;
+    }
+
+    .data-container { font-family:FiraCode; flex:1; min-width:0; }
+
+    .array-wrapper { display:inline-flex; background:#201528; border-radius:5px; gap:8px; line-height:1.4; }
+
+    .object-wrapper { display:inline-block; background:#201528; border-radius:6px; }
+
+    .array-header, .object-header {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 6px;
+    cursor: pointer;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+    .type-bracket { color:#c678dd; font-weight:bold; font-size:1.1em; }
+    .array-title { color:#f1fa8c; font-size:0.92em; opacity:0.95; }
+
+    .toggle {
+        cursor: pointer;
+        color: #c084fc;
+        font-weight: bold;
+        font-size: 22px;
+        user-select: none;
+        transition: transform 0.18s ease;
+        margin-top: -3px;
+    }
+
+    .array-wrapper.open > .toggle,
+    .object-wrapper.open > .toggle { transform: rotate(90deg); }
+
+    .toggle-content { display:none; margin-top:8px; margin-right:20px; }
+
+    .array-wrapper.open > .toggle-content,
+    .object-wrapper.open > .toggle-content { display:block; }
+
+    .string-value { color:#8ef58a; font-family: IRANSans; }
+    .number-value { color:#d19a66; }
+    .boolean-value { color:#ff4b4b; font-weight:bold; }
+    .null-value { color:#ff5555; }
+    .object-class { color:#ffb86c; font-weight:bold; }
+
+    </style>
+</head>
+
+<body>
+    <div id="logEntries" class="log-entries"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded",  function(e) {
+    const nodes = document.querySelectorAll('.string-value');
+    const onlyBasicLatin = /^[\u0000-\u007F]*$/;
+
+    nodes.forEach(node => {
+        const text = node.textContent || "";
+
+        if (onlyBasicLatin.test(text)) {
+            node.style.fontFamily = "FiraCode";
+        }
+    });
+});
+
+document.addEventListener("click", function(e) {
+    let header = e.target.closest(".array-header, .object-header");
+    if (!header) return;
+
+    let wrapper = header.closest(".array-wrapper, .object-wrapper");
+    if (!wrapper) return;
+
+    wrapper.classList.toggle("open");
+});
+
+function updateLog(html) {
+    document.getElementById("logEntries").insertAdjacentHTML("beforeend", html);
+}
+</script>
+
+</body>
+</html>
+HTML;
+
+        file_put_contents($this->logFilePath, $html, LOCK_EX);
+    }
+
+    public static function getInstance(): self {
+        if ( !self::$instance ) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    public function errorHandler( int $errno, string $errstr, string $errfile, int $errline ): bool {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
+        $this->log([ 'message' => $errstr ], $this->logLevels[$errno] ?? 'ERROR', [], $errfile, $errline, $trace);
+        return true;
+    }
+
+    /* ======================================================================
+       Unserialize + JSON auto-detector
+    ====================================================================== */
+
+    public function log( $data, string $level, array $context = [], ?string $file = null, ?int $line = null, ?array $trace = null ): void {
+        $date      = date('Y-m-d H:i:s');
+        $content   = $this->formatData($data);
+        $traceHTML = $trace ? $this->formatTrace($trace) : '';
+
+        $l = strtolower($level);
+
+        $classes = [
+            'fatal'     => [ 'entry' => 'log-entry-fatal', 'badge' => 'log-badge-error' ],
+            'error'     => [ 'entry' => 'log-entry-fatal', 'badge' => 'log-badge-error' ],
+            'exception' => [ 'entry' => 'log-entry-exception', 'badge' => 'log-badge-exception' ],
+            'warning'   => [ 'entry' => 'log-entry-warning', 'badge' => 'log-badge-warning' ],
+            'info'      => [ 'entry' => 'log-entry-info', 'badge' => 'log-badge-info' ],
+        ];
+
+        $entryClass = $classes[$l]['entry'] ?? 'log-entry-default';
+        $badgeClass = $classes[$l]['badge'] ?? 'log-badge';
+
+        $html = "<div class='log-entry {$entryClass}'>" . "<div class='log-meta'>" . "<span class='log-badge {$badgeClass}'>{$level}</span>" . "<span class='log-time'>{$date}</span>" . "<span class='log-file'>{$file}:{$line}</span>" . "</div>" . "<div class='data-container'>{$content}</div>" . "{$traceHTML}" . "</div>";
+
+        $safe = json_encode($html, JSON_UNESCAPED_UNICODE);
+
+        $entry = "<script>updateLog($safe);</script>\n";
+
+        file_put_contents($this->logFilePath, $entry, FILE_APPEND | LOCK_EX);
+    }
+
+    /* ======================================================================
+       Formatter اصلی
+    ====================================================================== */
+
+    public function formatData( $data, int $depth = 0 ): string {
+        $data = $this->autoDecode($data);
+
+        if ( $depth > 10 ) {
+            return "<span class='string-value'>[Maximum depth reached]</span>";
         }
 
         if ( is_array($data) ) {
             return $this->formatArray($data, $depth + 1);
         }
-
-        if ( is_string($data) ) {
-            return "<span class='string-value'>" . htmlspecialchars($data, ENT_QUOTES, 'UTF-8') . "</span>";
+        if ( is_object($data) ) {
+            return $this->formatObject($data, $depth + 1);
         }
-
-        if ( is_int($data) || is_float($data) ) {
+        if ( is_string($data) ) {
+            $safe = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+            return "<span class='string-value'>\"$safe\"</span>";
+        }
+        if ( is_numeric($data) ) {
             return "<span class='number-value'>$data</span>";
         }
-
         if ( is_bool($data) ) {
-            $value = $data ? 'true' : 'false';
-            return "<span class='boolean-value'>$value</span>";
+            return "<span class='boolean-value'>" . ( $data ? 'true' : 'false' ) . "</span>";
         }
-
-        if ( is_null($data) ) {
+        if ( $data === null ) {
             return "<span class='null-value'>null</span>";
-        }
-
-        if ( is_resource($data) ) {
-            return "<span class='string-value'>Resource: " . get_resource_type($data) . "</span>";
         }
 
         return "<span class='string-value'>" . htmlspecialchars(print_r($data, true), ENT_QUOTES, 'UTF-8') . "</span>";
     }
 
-    public function formatObject( $object, $depth ) {
-        if ( $depth > 20 ) {
-            return "<span class='string-value'>[Max depth reached]</span>";
+    private function autoDecode( $data ) {
+        if ( !is_string($data) ) {
+            return $data;
         }
 
-        $className = get_class($object);
-        $result    = "<div><span class='object-class'>Object($className)</span> {";
+        $t = trim($data);
+
+        // تشخیص serialize
+        if ( preg_match('/^(a|O|s|i|b|d):/', $t) ) {
+            $u = @unserialize($t, [ 'allowed_classes' => true ]);
+            if ( $u !== false || $t === 'b:0;' ) {
+                return $u;
+            }
+        }
+
+        // تشخیص JSON
+        $json = json_decode($t, true);
+        if ( json_last_error() === JSON_ERROR_NONE ) {
+            return $json;
+        }
+
+        return $data;
+    }
+
+    private function formatArray( array $array, int $depth ): string {
+        $id        = uniqid("arr_");
+        $isRoot    = $depth === 1;
+        $openClass = $isRoot ? "open" : "";
+
+        $out = "<div class='data-container array-wrapper {$openClass}'>";
+
+        $out .= "<div class='array-header'>
+                <span class='type-bracket'>[</span>
+                <span class='array-title'>array(" . count($array) . ")</span>
+                <span class='type-bracket'>]</span>
+                <span class='toggle'>▶</span>
+             </div>";
+
+        $out .= "<div id='{$id}' class='toggle-content'>";
+
+        foreach ( $array as $k => $v ) {
+            $fk = htmlspecialchars((string) $k, ENT_QUOTES, 'UTF-8');
+            $fv = $this->formatData($v, $depth);
+
+            $out .= "<div class='array-item' style='margin-left:20px;'>
+                    <span class='key-label'>$fk</span> => $fv
+                 </div>";
+        }
+
+        $out .= "</div></div>";
+        return $out;
+    }
+
+    /* ======================================================================
+       Trace formatter
+    ====================================================================== */
+
+    private function formatObject( object $obj, int $depth ): string {
+        $id        = uniqid("obj_");
+        $class     = get_class($obj);
+        $safeClass = htmlspecialchars(addslashes($class), ENT_QUOTES, 'UTF-8');
+        $isRoot    = $depth === 1;
+        $openClass = $isRoot ? "open" : "";
+
+        $out = "<div class='data-container object-wrapper {$openClass}'>
+            <div class='object-header'>
+                <span class='type-brace'>{</span>
+                <span class='object-class'>Object($safeClass)</span>
+                <span class='type-brace'>}</span>
+                <span class='toggle'>▶</span>
+            </div>
+            <div id='{$id}' class='toggle-content'>";
 
         try {
-            if ( $className === 'stdClass' ) {
-                $array          = json_decode(json_encode($object), true);
-                $formattedValue = $this->formatArray($array, $depth + 1);
-                $result         .= "<br>$formattedValue<br>";
+            $ref   = new ReflectionClass($obj);
+            $props = $ref->getProperties();
+
+            if ( empty($props) ) {
+                $props = get_object_vars($obj);
+                foreach ( $props as $name => $val ) {
+                    $fv  = $this->formatData($val, $depth);
+                    $out .= "<div class='object-prop' style='margin-left:20px;'>
+                        <span class='key-label'>dynamic \$$name</span> = $fv
+                     </div>";
+                }
             }
             else {
-                $reflection = new \ReflectionClass($object);
-                $properties = $reflection->getProperties();
+                foreach ( $props as $p ) {
+                    $p->setAccessible(true);
+                    $name = $p->getName();
+                    $val  = $p->getValue($obj);
+                    $vis  = $p->isPublic() ? 'public' : ( $p->isProtected() ? 'protected' : 'private' );
+                    $fv   = $this->formatData($val, $depth);
 
-                $items = [];
-                foreach ( $properties as $property ) {
-                    try {
-                        $property->setAccessible(true);
-                        $name  = $property->getName();
-                        $value = $property->getValue($object);
-
-                        $formattedValue = $this->formatData($value, $depth + 1);
-                        $items[]        = "<span class='property-name'>$name</span> => $formattedValue";
-                    } catch ( Exception $e ) {
-                        $items[] = "<span class='property-name'>$name</span> => <span class='string-value'>[Inaccessible]</span>";
-                    }
-                }
-
-                if ( empty($items) ) {
-                    $result .= " [No accessible properties]";
-                }
-                else {
-                    $result .= "<br>" . implode(",<br>", $items) . "<br>";
+                    $out .= "<div class='object-prop' style='margin-left:20px;'>
+                        <span class='key-label'>$vis \$$name</span> = $fv
+                     </div>";
                 }
             }
-            $result .= "}";
-        } catch ( Exception $e ) {
-            $result .= " ... } <span class='string-value'>[Could not inspect object properties: {$e->getMessage()}]</span>";
+        } catch ( Throwable $e ) {
+            $out .= "<div class='object-prop'>[Reflection error]</div>";
         }
 
-        return $result . "</div>";
+        $out .= "</div></div>";
+        return $out;
     }
 
-    public function formatArray( $array, $depth ) {
-        if ( $depth > 20 ) {
-            return "<span class='string-value'>[Max depth reached]</span>";
+    /* ======================================================================
+       لاگ اصلی
+    ====================================================================== */
+
+    private function formatTrace( array $trace ): string {
+        $html = "<div class='context-section'><h4>Backtrace</h4><div class='data-container'>";
+        foreach ( $trace as $i => $t ) {
+            $file = $t['file'] ?? '[internal]';
+            $line = $t['line'] ?? '-';
+            $func = $t['function'] ?? '?';
+
+            $html .= "<div style='margin-bottom:6px; color:#a5b4fc'>#$i $file:$line — {$func}()</div>";
+
+            if ( !empty($t['args']) ) {
+                $html .= "<div style='margin-right:20px'>" . $this->formatData($t['args']) . "</div>";
+            }
         }
-
-        if ( empty($array) ) {
-            return "[]";
-        }
-
-        $result = "[";
-        $items  = [];
-
-        foreach ( $array as $key => $value ) {
-            $formattedKey   = is_string($key) ? "'<span class='property-name'>$key</span>'" : $key;
-            $formattedValue = $this->formatData($value, $depth + 1);
-            $items[]        = "$formattedKey => $formattedValue";
-        }
-
-        $result .= "<br>" . implode(",<br>", $items) . "<br>]";
-        return $result;
+        return $html . "</div></div>";
     }
 
-    public function errorHandler( $errno = null, $errstr = null, $errfile = null, $errline = null, $errcontext = null ) {
-        $level = $this->logLevels[$errno] ?? 'UNKNOWN';
+    /* ======================================================================
+       Error / Exception / Shutdown handlers
+    ====================================================================== */
 
-        $errorData = [
-            'message' => $errstr,
-            'file'    => $errfile,
-            'line'    => $errline,
-            'context' => $errcontext,
-        ];
-
-        $this->log($errorData, $level, [], $errfile, $errline);
-        return true;
+    public function exceptionHandler( Throwable $e ): void {
+        $this->log([
+            'message'   => $e->getMessage(),
+            'exception' => $e,
+        ], 'EXCEPTION', [], $e->getFile(), $e->getLine(), $e->getTrace());
     }
 
-    public function exceptionHandler( $exception ) {
-        $errorData = [
-            'message' => $exception->getMessage(),
-            'file'    => $exception->getFile(),
-            'line'    => $exception->getLine(),
-            'trace'   => $exception->getTrace(),
-        ];
-
-        $this->log($errorData, 'ERROR', [], $exception->getFile(), $exception->getLine());
-    }
-
-    public function shutdownHandler() {
-        $error = error_get_last();
-
-        if ( $error && in_array($error['type'], [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ]) ) {
-            $this->log($error, 'FATAL', [], $error['file'], $error['line']);
+    public function shutdownHandler(): void {
+        $e = error_get_last();
+        if ( $e && in_array($e['type'], [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ]) ) {
+            $this->log($e, 'FATAL', [], $e['file'] ?? '', $e['line'] ?? 0);
         }
 
-        file_put_contents($this->logFilePath, "</body></html>", FILE_APPEND | LOCK_EX);
+        // بستن تگ‌های HTML در انتهای فایل
+        file_put_contents($this->logFilePath, "</div></body></html>", FILE_APPEND | LOCK_EX);
+    }
+
+    private function entryClass( string $level ): string {
+        $l = strtolower($level);
+
+        return match ( $l ) {
+            'fatal', 'error' => 'log-entry-fatal',
+            'exception'      => 'log-entry-exception',
+            'warning'        => 'log-entry-warning',
+            'info'           => 'log-entry-info',
+            default          => 'log-entry-default',
+        };
+    }
+
+}
+
+/* ======================================================================
+   کلاس ساده‌تر برای استفاده روزمره
+====================================================================== */
+
+class Log {
+    public static function info( $data, array $context = [] ): void {
+        self::write('INFO', $data, $context);
+    }
+
+    public static function write( string $level, $data, array $context = [] ): void {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2] ?? [];
+
+        AdvancedLogger::getInstance()->log($data, $level, $context, $trace['file'] ?? null, $trace['line'] ?? null);
+    }
+
+    public static function debug( $data, array $context = [] ): void {
+        self::write('DEBUG', $data, $context);
+    }
+
+    public static function error( $data, array $context = [] ): void {
+        self::write('ERROR', $data, $context);
+    }
+
+    public static function warning( $data, array $context = [] ): void {
+        self::write('WARNING', $data, $context);
+    }
+
+    public static function notice( $data, array $context = [] ): void {
+        self::write('NOTICE', $data, $context);
     }
 }
 
-class log {
-    public static function info( $data, $context = [] ) {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
-        $file  = $trace[0]['file'] ?? 'unknown';
-        $line  = $trace[0]['line'] ?? 'unknown';
-        AdvancedLogger::getInstance()->log($data, 'INFO', $context, $file, $line);
-    }
+/* توابع کمکی کوتاه */
+function lg( $data, string $level = 'DEBUG', array $context = [] ): void {
+    Log::write($level, $data, $context);
+}
 
-    public static function debug( $data, $context = [] ) {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
-        $file  = $trace[0]['file'] ?? 'unknown';
-        $line  = $trace[0]['line'] ?? 'unknown';
-        AdvancedLogger::getInstance()->log($data, 'DEBUG', $context, $file, $line);
-    }
+function log( $data, string $level = 'DEBUG', array $context = [] ): void {
+    Log::write($level, $data, $context);
+}
 
-    public static function error( $data, $context = [] ) {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
-        $file  = $trace[0]['file'] ?? 'unknown';
-        $line  = $trace[0]['line'] ?? 'unknown';
-        AdvancedLogger::getInstance()->log($data, 'ERROR', $context, $file, $line);
+function dd( ...$vars ): never {
+    foreach ( $vars as $v ) {
+        Log::debug($v);
     }
+    die;
+}
 
-    public static function warning( $data, $context = [] ) {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
-        $file  = $trace[0]['file'] ?? 'unknown';
-        $line  = $trace[0]['line'] ?? 'unknown';
-        AdvancedLogger::getInstance()->log($data, 'WARNING', $context, $file, $line);
-    }
-
-    public static function notice( $data, $context = [] ) {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
-        $file  = $trace[0]['file'] ?? 'unknown';
-        $line  = $trace[0]['line'] ?? 'unknown';
-        AdvancedLogger::getInstance()->log($data, 'NOTICE', $context, $file, $line);
+function dump( ...$vars ): void {
+    foreach ( $vars as $v ) {
+        Log::debug($v);
     }
 }
 
-function lg( $data, $level = 'DEBUG', $context = [] ) {
-    $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1)[0];
-    AdvancedLogger::getInstance()->log($data, $level, $context, $trace['file'] ?? 'unknown', $trace['line'] ?? 'unknown');
-}
-
-function dd( $data ) {
-    $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1)[0];
-    AdvancedLogger::getInstance()->log($data, 'DEBUG', [], $trace['file'] ?? 'unknown', $trace['line'] ?? 'unknown');
-    die();
-}
-
+/* فعال‌سازی خودکار */
 AdvancedLogger::getInstance();
-
-//log::info('این یک پیغام اطلاعاتی است');
-//log::debug('مقدار متغیر:', ['var' => $value]);
-//log::error('خطا در اجرای کد');
-//lg('این یک لاگ است', 'INFO');
-//lg(['data' => $data], 'DEBUG', ['context' => 'additional info']);
-
-?>

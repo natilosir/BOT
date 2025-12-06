@@ -1,52 +1,55 @@
 <?php
 
+use Natilosir\Bot\Http;
+
 $config    = require __DIR__ . '/../../../../config.php';
 $BOT_TOKEN = $config['bot']['token'];
 define('api', 'https://api.telegram.org/bot' . $BOT_TOKEN . '/');
 
-function http( $uri, $array = [], $method = 'POST' ) {
-    // Initialize a cURL session
-    $ch = curl_init();
-
-    // Convert the method to uppercase to avoid case-sensitivity issues
+function http($uri, $data = [], $method = 'POST')
+{
     $method = strtoupper($method);
 
-    // Base URL
-    $parts = explode('/', $uri);
+    // Build full URL
+    if (str_starts_with($uri, 'http://') || str_starts_with($uri, 'https://')) {
+        $base = '';
+        $url  = $uri;
+    } else {
+        $base = api;
+        $url  = ltrim($uri, '/');
+    }
 
-    if ( isset($parts[0]) && ( strpos($parts[0], 'http:') === 0 || strpos($parts[0], 'https:') === 0 ) ) {
-        $url = $uri;
-    }
-    else {
-        $url = api . $uri;
-    }
-    // Ensure the array is not empty, or use an empty string as query
-    $queryString = is_array($array) && !empty($array) ? http_build_query($array) : '';
-
-    // Configure URL and method-specific settings
-    if ( $method === 'GET' ) {
-        $url .= $queryString ? '?' . $queryString : '';
-    }
-    else {
-        // Default to POST
-        curl_setopt($ch, CURLOPT_POST, 1);
-        if ( $queryString ) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $queryString);
+    foreach ($data as $key => $value) {
+        if (is_array($value) && isset($value['tmp_name']) && is_file($value['tmp_name'])) {
+            $data[$key] = new CURLFile(
+                $value['tmp_name'],
+                $value['type'] ?? null,
+                $value['name'] ?? 'file'
+            );
         }
     }
 
-    // Set the URL
-    curl_setopt($ch, CURLOPT_URL, $url);
+    $request = Http::baseUrl($base)->withoutVerifying();
 
-    // Common cURL options
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    switch ($method) {
+        case 'GET':
+            $response = $request->get($url, $data);
+            break;
+        case 'POST':
+            $response = $request->post($url, $data);
+            break;
+        case 'PUT':
+            $response = $request->put($url, $data);
+            break;
+        case 'PATCH':
+            $response = $request->patch($url, $data);
+            break;
+        case 'DELETE':
+            $response = $request->delete($url, $data);
+            break;
+        default:
+            throw new Exception("Unknown HTTP method: $method");
+    }
 
-    // Execute the cURL session and fetch the response
-    $response = curl_exec($ch);
-
-    // Close the cURL session
-    curl_close($ch);
-
-    // Return the decoded JSON response
-    return json_decode($response);
+    return $response->array();
 }
