@@ -1,6 +1,6 @@
 <?php
 
-namespace Natilosir\Bot\Exceptions;
+namespace natilosir\bot\Exceptions;
 
 class ConnectionException extends \Exception {
 

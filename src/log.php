@@ -6,8 +6,12 @@ use ReflectionClass;
 use Throwable;
 
 date_default_timezone_set('Asia/Tehran');
-header('Content-Type: text/html; charset=utf-8');
-mb_internal_encoding('UTF-8');
+if (PHP_SAPI !== 'cli' && !headers_sent()) {
+    header('Content-Type: text/html; charset=utf-8');
+}
+if (function_exists('mb_internal_encoding')) {
+    mb_internal_encoding('UTF-8');
+}
 
 class AdvancedLogger {
     public static $instance;
@@ -416,8 +420,22 @@ HTML;
     public function exceptionHandler( Throwable $e ): void {
         $this->log([
             'message'   => $e->getMessage(),
-            'exception' => $e,
+            'exception' => get_class($e),
         ], 'EXCEPTION', [], $e->getFile(), $e->getLine(), $e->getTrace());
+
+        if (PHP_SAPI !== 'cli' && !headers_sent()) {
+            http_response_code(500);
+            header('Content-Type: text/html; charset=utf-8');
+        }
+
+        $message = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
+        $file = htmlspecialchars($e->getFile(), ENT_QUOTES, 'UTF-8');
+        $line = (int) $e->getLine();
+        echo "<div dir='ltr' style='font-family:monospace;background:#1e1e1e;color:#eee;padding:18px;border-radius:10px'>"
+             . "<b style='color:#ff6b6b'>" . htmlspecialchars(get_class($e), ENT_QUOTES, 'UTF-8') . "</b><br>"
+             . "<div style='margin-top:8px'>{$message}</div>"
+             . "<div style='margin-top:8px;color:#aaa'>{$file}:{$line}</div>"
+             . "<div style='margin-top:12px'>Full trace: <code>log.html</code></div></div>";
     }
 
     public function shutdownHandler(): void {

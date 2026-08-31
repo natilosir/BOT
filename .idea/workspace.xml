@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="fdbfd5cc-8afe-446d-bf62-a800994b0b1b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/Drivers/BaleDriver.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Drivers/TelegramDriver.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Facades/Bot.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Interface/BotDriverInterface.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Support/BotConfig.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Support/BotManager.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ConnectionException.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Exceptions/ConnectionException.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Http.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Http.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PendingRequest.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/PendingRequest.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/RequestException.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Exceptions/RequestException.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Response.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Response.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/httpfunc.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/httpfunc.php" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="P:\BOT\src\Exceptions" />
+      <recent name="P:\BOT\src" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="ComposerRunConfigurationType" factoryName="Composer Script">
+      <option name="pathToComposerJson" value="$PROJECT_DIR$/composer.json" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

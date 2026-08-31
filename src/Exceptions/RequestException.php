@@ -1,8 +1,8 @@
 <?php
 
-namespace Natilosir\Bot\Exceptions;
+namespace natilosir\bot\Exceptions;
 
-use Natilosir\Bot\Response;
+use natilosir\bot\Response;
 
 class RequestException extends \Exception {
     public Response $response;

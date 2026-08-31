@@ -1,117 +1,111 @@
 <?php
 
-namespace Natilosir\Bot;
+namespace natilosir\bot;
 
-use Natilosir\Bot\Exceptions\RequestException;
+use Illuminate\Http\Client\Response as IlluminateResponse;
 
-class Response {
-    protected string $body;
-    protected int    $statusCode;
-    protected array  $headers;
-    protected        $decoded = null;
-    protected array  $debugInfo;
-
-    public function __construct( string $body, int $statusCode, array $headers, array $debugInfo = [] ) {
-        $this->body       = $body;
-        $this->statusCode = $statusCode;
-        $this->headers    = $headers;
-        $this->debugInfo  = $debugInfo;
+class Response
+{
+    public function __construct(private IlluminateResponse $response)
+    {
     }
 
-    public function header( string $key ): ?string {
-        return $this->headers[$key] ?? null;
+    public function __call(string $method, array $parameters): mixed
+    {
+        return $this->response->{$method}(...$parameters);
     }
 
-    public function clientError(): bool {
-        return $this->statusCode >= 400 && $this->statusCode < 500;
+    public function __get(string $key): mixed
+    {
+        $object = $this->object();
+        return is_object($object) ? ($object->{$key} ?? null) : null;
     }
 
-    public function serverError(): bool {
-        return $this->statusCode >= 500;
+    public function body(): string
+    {
+        return $this->response->body();
     }
 
-    public function throw(): self {
-        if ( $this->failed() ) {
-            throw new RequestException($this);
-        }
+    public function json(?string $key = null, mixed $default = null): mixed
+    {
+        return $this->response->json($key, $default);
+    }
+
+    public function array(): array
+    {
+        $json = $this->response->json();
+        return is_array($json) ? $json : [];
+    }
+
+    public function object(): mixed
+    {
+        return $this->response->object();
+    }
+
+    public function status(): int
+    {
+        return $this->response->status();
+    }
+
+    public function headers(): array
+    {
+        return $this->response->headers();
+    }
+
+    public function header(string $key): ?string
+    {
+        return $this->response->header($key);
+    }
+
+    public function successful(): bool
+    {
+        return $this->response->successful();
+    }
+
+    public function failed(): bool
+    {
+        return $this->response->failed();
+    }
+
+    public function clientError(): bool
+    {
+        return $this->response->clientError();
+    }
+
+    public function serverError(): bool
+    {
+        return $this->response->serverError();
+    }
+
+    public function throw(): static
+    {
+        $this->response->throw();
         return $this;
     }
 
-    public function failed(): bool {
-        return !$this->successful();
-    }
-
-    public function successful(): bool {
-        return $this->statusCode >= 200 && $this->statusCode < 300;
-    }
-
-    public function __get( $key ) {
-        return $this->object()->{$key} ?? null;
-    }
-
-    public function object() {
-        return json_decode($this->body, false);
-    }
-
-    public function log() {
-        $this->lg();
-    }
-
-    public function lg() {
-        $payload = [
+    public function lg(): static
+    {
+        lg([
             'response' => [
-                'body'    => $this->object(),
-                'status'  => $this->status(),
+                'status' => $this->status(),
                 'headers' => $this->headers(),
+                'body' => $this->object() ?? $this->body(),
             ],
-            'request'  => [
-                'method'  => $this->debugInfo['method'] ?? null,
-                'url'     => $this->debugInfo['url'] ?? null,
-                'headers' => $this->debugInfo['headers'] ?? null,
-                'options' => $this->debugInfo['options'] ?? null,
-                'is_json' => $this->debugInfo['is_json'] ?? false,
-            ],
-        ];
-        Log::debug($payload);
+        ]);
+        return $this;
     }
 
-    public function status(): int {
-        return $this->statusCode;
+    public function log(): static
+    {
+        return $this->lg();
     }
 
-    public function headers(): array {
-        return $this->headers;
-    }
-
-    public function dd() {
-        $this->lg();
-        die();
-    }
-
-    public function body(): string {
-        return $this->body;
-    }
-
-    public function array(): array {
-        if ( $this->decoded === null ) {
-            $this->decoded = json_decode($this->body, true);
-        }
-        return $this->decoded ?? [];
-    }
-
-    public function json( string $key = null, $default = null ) {
-        if ( $this->decoded === null ) {
-            $this->decoded = json_decode($this->body, true);
-        }
-
-        if ( json_last_error() !== JSON_ERROR_NONE ) {
-            return $default;
-        }
-
-        if ( $key === null ) {
-            return $this->decoded;
-        }
-
-        return $this->decoded[$key] ?? $default;
+    public function dd(): never
+    {
+        dd([
+            'status' => $this->status(),
+            'headers' => $this->headers(),
+            'body' => $this->object() ?? $this->body(),
+        ]);
     }
 }

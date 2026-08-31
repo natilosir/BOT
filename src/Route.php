@@ -10,16 +10,37 @@ class Route {
     private static $request              = null;
     private static $configclear          = true;
     private static $states               = [];
+    private static bool $dispatchRegistered = false;
+    private static bool $dispatched = false;
 
     public function __construct( Request $request ) {
         self::$request = $request ?? new Request();
     }
 
     public static function init(): void {
-        if ( self::$instance === null ) {
-            self::$instance = new self(new Request());
-            self::processRequest();
+        self::dispatch();
+    }
+
+    public static function dispatch(): void {
+        if (self::$dispatched) {
+            return;
         }
+        self::$dispatched = true;
+        self::processRequest();
+    }
+
+    private static function registerAutoDispatch(): void {
+        if (self::$dispatchRegistered) {
+            return;
+        }
+        self::$dispatchRegistered = true;
+        register_shutdown_function(static function (): void {
+            $lastError = error_get_last();
+            $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR];
+            if ($lastError === null || !in_array($lastError['type'], $fatalTypes, true)) {
+                self::dispatch();
+            }
+        });
     }
 
     public static function processRequest(): void {
@@ -36,7 +57,7 @@ class Route {
             return;
         }
 
-        require_once __DIR__ . '/../../../../Router/state.php';
+        require_once dirname(__DIR__, 4) . '/Router/state.php';
         State::init();
 
         if ( self::$default ) {
@@ -56,6 +77,7 @@ class Route {
     }
 
     public static function add( $uri, $action ) {
+        self::registerAutoDispatch();
         if ( is_array($uri) ) {
             foreach ( $uri as $u ) {
                 self::registerRoute($u, $action);
@@ -68,6 +90,7 @@ class Route {
     }
 
     public static function def( $default ) {
+        self::registerAutoDispatch();
         self::$default = $default;
         return new self(self::$request ?? new Request());
     }

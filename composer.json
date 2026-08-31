@@ -12,7 +12,15 @@
   "autoload": {
     "psr-4": {
       "natilosir\\bot\\": "src/"
-    }
+    },
+    "files": [
+      "src/helpers.php",
+      "src/bootstrap.php"
+    ]
   },
-  "require": {}
+  "require": {
+    "illuminate/http": "^13.29",
+    "illuminate/database": "^13.29"
+  },
+  "version": "1.0.12"
 }

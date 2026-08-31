@@ -74,7 +74,12 @@ class State {
     public static function set( string $state ) {
         try {
             $userId = ( new Request() )->fromID;
-            User::where('user_id', $userId)->update(['state' => $state]);
+
+            $user = User::where('user_id', $userId)
+                ->first();
+
+            $user->state = ( trim($state) !== '' ) ? trim($state) : null;
+            $user->save();
         } catch ( \Exception $e ) {
             lg("Error setting user state: " . $e->getMessage());
         }
@@ -82,7 +87,14 @@ class State {
 
     public static function clear() {
         try {
-            self::set('');
+            $userId = ( new Request() )->fromID;
+
+            $user = User::where('user_id', $userId)
+                ->first();
+            if ( $user ) {
+                $user->state = null;
+                $user->save();
+            }
         } catch ( \Exception $e ) {
             lg("Error clearing user state: " . $e->getMessage());
         }
