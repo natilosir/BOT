@@ -22,5 +22,4 @@
     "illuminate/http": "^13.29",
     "illuminate/database": "^13.29"
   },
-  "version": "1.0.12"
 }
