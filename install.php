@@ -1,5 +1,17 @@
 <?php
 
+// ===========================
+// 1. بررسی وجود فایل کانفیگ (یک‌بار اجرا)
+// ===========================
+$configFile = __DIR__ . '/../../../config.php';
+if (file_exists($configFile)) {
+    echo "✅ پیکربندی قبلاً انجام شده است. برای تغییر مجدد، فایل config.php را حذف کنید.\n";
+    exit(0);
+}
+
+// ===========================
+// 2. انتقال فایل‌ها (بخش قبلی)
+// ===========================
 $sourceDir      = __DIR__.'/../telegram-bot-sdk/';
 $destinationDir = __DIR__.'/../../../';
 
@@ -21,20 +33,27 @@ if (is_dir($sourceDir)) {
 
     rmdir($sourceDir);
 }
+
+// ===========================
+// 3. گرفتن اطلاعات (تنها در صورتی که پوشه منبع وجود نداشته باشد)
+// ===========================
 if (! is_dir($sourceDir)) {
+    // تابع ورودی با پشتیبانی از readline
     function prompt($message)
     {
-        echo $message.': ';
-
-        return trim(fgets(STDIN));
+        echo $message . ': ';
+        $handle = fopen('php://stdin', 'r');
+        $input = fgets($handle);
+        fclose($handle);
+        return trim($input);
     }
 
     // ANSI color codes
-    $yellow = "\033[33m"; // Yellow color
-    $green  = "\033[32m";  // Green color
-    $reset  = "\033[0m";   // Reset color to default
+    $yellow = "\033[33m";
+    $green  = "\033[32m";
+    $reset  = "\033[0m";
 
-    // Get user input with different colors
+    // دریافت اطلاعات
     $botToken = prompt($green.'Please enter your bot token API'.$reset);
     $dbHost   = prompt($green.'Please enter your database host'.$reset.' [if empty: '.$yellow.'localhost'.$reset.']');
     if (empty($dbHost)) {
@@ -49,6 +68,7 @@ if (! is_dir($sourceDir)) {
     $dbPassword = prompt($green.'Please enter your database password'.$reset);
     $dbName     = prompt($green.'Please enter your database name'.$reset);
 
+    // ساخت محتوای config.php
     $configContent = <<<'EOD'
 <?php
 
@@ -101,9 +121,9 @@ EOD;
         $configContent = str_replace($placeholder, $value, $configContent);
     }
 
-    file_put_contents('config.php', $configContent);
+    file_put_contents($configFile, $configContent);
 
-    echo 'The application is ready to run. Please read the documentation.';
+    echo "\n✅ The application is ready to run. Please read the documentation.\n";
 } else {
-    echo 'ERROR';
+    echo 'ERROR: Source directory not found.'."\n";
 }

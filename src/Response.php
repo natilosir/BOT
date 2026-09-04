@@ -3,109 +3,119 @@
 namespace natilosir\bot;
 
 use Illuminate\Http\Client\Response as IlluminateResponse;
+use JsonSerializable;
+use stdClass;
 
-class Response
-{
-    public function __construct(private IlluminateResponse $response)
-    {
+class Response implements JsonSerializable {
+    public function __construct( IlluminateResponse $response ) {
+        $this->response = $response;
     }
 
-    public function __call(string $method, array $parameters): mixed
-    {
+    private IlluminateResponse $response;
+
+    public function __get( string $key ): mixed {
+        $data = $this->object();
+        return is_object($data) ? ( $data->{$key} ?? null ) : null;
+    }
+
+    public function __call( string $method, array $parameters ): mixed {
         return $this->response->{$method}(...$parameters);
     }
 
-    public function __get(string $key): mixed
-    {
-        $object = $this->object();
-        return is_object($object) ? ($object->{$key} ?? null) : null;
+    public function __debugInfo(): array {
+        $data = $this->object();
+        return is_object($data) ? (array) $data : [ 'data' => $data ];
     }
 
-    public function body(): string
-    {
+    public function jsonSerialize(): mixed {
+        return $this->object();
+    }
+
+    public function __toString(): string {
+        return json_encode($this->object(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    }
+
+    public function body(): string {
         return $this->response->body();
     }
 
-    public function json(?string $key = null, mixed $default = null): mixed
-    {
-        return $this->response->json($key, $default);
+    public function json( ?string $key = null, mixed $default = null ): mixed {
+        return $this->convertToDeepObject($this->response->json($key, $default));
     }
 
-    public function array(): array
-    {
-        $json = $this->response->json();
-        return is_array($json) ? $json : [];
+    public function array(): mixed {
+        return $this->convertToDeepObject($this->response->json());
     }
 
-    public function object(): mixed
-    {
-        return $this->response->object();
+    public function object(): mixed {
+        return $this->convertToDeepObject($this->response->object());
     }
 
-    public function status(): int
-    {
+    public function status(): int {
         return $this->response->status();
     }
 
-    public function headers(): array
-    {
+    public function headers(): array {
         return $this->response->headers();
     }
 
-    public function header(string $key): ?string
-    {
+    public function header( string $key ): ?string {
         return $this->response->header($key);
     }
 
-    public function successful(): bool
-    {
+    public function successful(): bool {
         return $this->response->successful();
     }
 
-    public function failed(): bool
-    {
+    public function failed(): bool {
         return $this->response->failed();
     }
 
-    public function clientError(): bool
-    {
+    public function clientError(): bool {
         return $this->response->clientError();
     }
 
-    public function serverError(): bool
-    {
+    public function serverError(): bool {
         return $this->response->serverError();
     }
 
-    public function throw(): static
-    {
+    public function throw(): static {
         $this->response->throw();
         return $this;
     }
 
-    public function lg(): static
-    {
+    public function lg(): static {
         lg([
-            'response' => [
-                'status' => $this->status(),
-                'headers' => $this->headers(),
-                'body' => $this->object() ?? $this->body(),
-            ],
+            'status' => $this->status(),
+            'data'   => $this->object(),
         ]);
         return $this;
     }
 
-    public function log(): static
-    {
+    public function log(): static {
         return $this->lg();
     }
 
-    public function dd(): never
-    {
-        dd([
-            'status' => $this->status(),
-            'headers' => $this->headers(),
-            'body' => $this->object() ?? $this->body(),
-        ]);
+    public function dd(): never {
+        dd($this->object());
+    }
+
+    private function convertToDeepObject( mixed $data ): mixed {
+        if ( is_array($data) ) {
+            $obj = new stdClass();
+            foreach ( $data as $key => $value ) {
+                $obj->{$key} = $this->convertToDeepObject($value);
+            }
+            return $obj;
+        }
+
+        if ( is_object($data) && get_class($data) === stdClass::class ) {
+            foreach ( $data as $key => $value ) {
+                $data->{$key} = $this->convertToDeepObject($value);
+            }
+            return $data;
+        }
+
+        return $data;
     }
 }

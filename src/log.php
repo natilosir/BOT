@@ -6,18 +6,22 @@ use ReflectionClass;
 use Throwable;
 
 date_default_timezone_set('Asia/Tehran');
-if (PHP_SAPI !== 'cli' && !headers_sent()) {
+if ( PHP_SAPI !== 'cli' && !headers_sent() ) {
     header('Content-Type: text/html; charset=utf-8');
 }
-if (function_exists('mb_internal_encoding')) {
+if ( function_exists('mb_internal_encoding') ) {
     mb_internal_encoding('UTF-8');
 }
 
 class AdvancedLogger {
+    public function __construct() {
+        $this->logFilePath = __DIR__ . '/../../../../log.html';
+        $this->initialize();
+    }
+
     public static $instance;
     public        $logFilePath;
-
-    public $logLevels = [
+    public        $logLevels = [
         E_ERROR             => 'ERROR',
         E_WARNING           => 'WARNING',
         E_PARSE             => 'PARSE',
@@ -35,11 +39,6 @@ class AdvancedLogger {
         E_USER_DEPRECATED   => 'USER_DEPRECATED',
     ];
 
-    public function __construct() {
-        $this->logFilePath = __DIR__ . '/../../../../log.html';
-        $this->initialize();
-    }
-
     public function initialize(): void {
         if ( file_exists($this->logFilePath) ) {
             @unlink($this->logFilePath);
@@ -53,157 +52,157 @@ class AdvancedLogger {
 
         $this->createLogFile();
     }
-    private function createLogFile(): void
-    {
+
+    private function createLogFile(): void {
         $html = <<<HTML
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>Debug Log</title>
-
-    <style>
-    @font-face {
-        font-family: "FiraCode";
-        src: url("https://dl.natilos.ir/ffff/FiraCode-Medium.woff2") format("woff2");
-        font-weight: normal;
-        font-style: normal;
-    }
-
-    @font-face {
-        font-family: "IRANSans";
-        src: url("https://natilos.ir/zimage/font/is.woff") format("woff2");
-        font-weight: normal;
-        font-style: normal;
-    }
-
-    body {font-family: IRANSans; background:#1e1e1e; color:#d4d4d4; margin:0; padding:20px;}
-    .log-entries {direction: ltr; text-align: left;}
-    .log-entry {background:#2c203d; margin:10px 0; padding:15px; border-radius:8px; border-left:4px solid #b48ef7;}
-
-    .log-meta {margin-bottom:10px; font-size:0.9em;}
-    .log-badge {background:#7c3aed;font-family: FiraCode;padding:2px 8px; border-radius:4px; font-weight:bold;}
-    .log-time {margin:0 15px; color:#b3a6ca;font-family: FiraCode}
-    .log-file {color:#c084fc;font-family: FiraCode}
-
-    .log-entry-fatal,
-    .log-entry-error { background:#3b0d0d !important; border-left:4px solid #ff4b4b !important; }
-
-    .log-entry-exception { background:#4a0000 !important; border-left:4px solid #ff1a1a !important; }
-
-    .log-entry-warning {
-        background:#3b320d !important;
-        border-left:4px solid #facc15 !important;
-        color:#fef9c3 !important;
-    }
-
-    .log-entry-info {
-        background:#0d3b1a !important;
-        border-left:4px solid #22c55e !important;
-    }
-
-    .log-entry-default {
-        background:#2c203d !important;
-        border-left:4px solid #b48ef7 !important;
-    }
-
-    .log-badge-error,
-    .log-badge-fatal { background:#ff4b4b !important; }
-
-    .log-badge-exception { background:#ff1a1a !important; color:#fff !important; }
-
-    .log-badge-warning { background:#facc15 !important; color:#000 !important; }
-
-    .log-badge-info { background:#22c55e !important; }
-
-    .array-item { display:flex; align-items:flex-start; gap:10px; }
-    .key-label { color:#ff79c6; font-weight:bold; flex-shrink:0; }
-
-    .arrow::before {
-        content: "⇒";
-        color: #8be9fd;
-        font-weight: bold;
-    }
-
-    .data-container { font-family:FiraCode; flex:1; min-width:0; }
-
-    .array-wrapper { display:inline-flex; background:#201528; border-radius:5px; gap:8px; line-height:1.4; }
-
-    .object-wrapper { display:inline-block; background:#201528; border-radius:6px; }
-
-    .array-header, .object-header {
-    display: inline-flex;
-    align-items: flex-start;
-    gap: 6px;
-    cursor: pointer;
-    flex-direction: row;
-    justify-content: flex-start;
-}
-    .type-bracket { color:#c678dd; font-weight:bold; font-size:1.1em; }
-    .array-title { color:#f1fa8c; font-size:0.92em; opacity:0.95; }
-
-    .toggle {
-        cursor: pointer;
-        color: #c084fc;
-        font-weight: bold;
-        font-size: 22px;
-        user-select: none;
-        transition: transform 0.18s ease;
-        margin-top: -3px;
-    }
-
-    .array-wrapper.open > .toggle,
-    .object-wrapper.open > .toggle { transform: rotate(90deg); }
-
-    .toggle-content { display:none; margin-top:8px; margin-right:20px; }
-
-    .array-wrapper.open > .toggle-content,
-    .object-wrapper.open > .toggle-content { display:block; }
-
-    .string-value { color:#8ef58a; font-family: IRANSans; }
-    .number-value { color:#d19a66; }
-    .boolean-value { color:#ff4b4b; font-weight:bold; }
-    .null-value { color:#ff5555; }
-    .object-class { color:#ffb86c; font-weight:bold; }
-
-    </style>
-</head>
-
-<body>
-    <div id="logEntries" class="log-entries"></div>
-
-<script>
-document.addEventListener("DOMContentLoaded",  function(e) {
-    const nodes = document.querySelectorAll('.string-value');
-    const onlyBasicLatin = /^[\u0000-\u007F]*$/;
-
-    nodes.forEach(node => {
-        const text = node.textContent || "";
-
-        if (onlyBasicLatin.test(text)) {
-            node.style.fontFamily = "FiraCode";
-        }
-    });
-});
-
-document.addEventListener("click", function(e) {
-    let header = e.target.closest(".array-header, .object-header");
-    if (!header) return;
-
-    let wrapper = header.closest(".array-wrapper, .object-wrapper");
-    if (!wrapper) return;
-
-    wrapper.classList.toggle("open");
-});
-
-function updateLog(html) {
-    document.getElementById("logEntries").insertAdjacentHTML("beforeend", html);
-}
-</script>
-
-</body>
-</html>
-HTML;
+            <!DOCTYPE html>
+            <html lang="fa" dir="rtl">
+            <head>
+                <meta charset="UTF-8">
+                <title>Debug Log</title>
+            
+                <style>
+                @font-face {
+                    font-family: "FiraCode";
+                    src: url("https://dl.natilos.ir/ffff/FiraCode-Medium.woff2") format("woff2");
+                    font-weight: normal;
+                    font-style: normal;
+                }
+            
+                @font-face {
+                    font-family: "IRANSans";
+                    src: url("https://natilos.ir/zimage/font/is.woff") format("woff2");
+                    font-weight: normal;
+                    font-style: normal;
+                }
+            
+                body {font-family: IRANSans; background:#1e1e1e; color:#d4d4d4; margin:0; padding:20px;}
+                .log-entries {direction: ltr; text-align: left;}
+                .log-entry {background:#2c203d; margin:10px 0; padding:15px; border-radius:8px; border-left:4px solid #b48ef7;}
+            
+                .log-meta {margin-bottom:10px; font-size:0.9em;}
+                .log-badge {background:#7c3aed;font-family: FiraCode;padding:2px 8px; border-radius:4px; font-weight:bold;}
+                .log-time {margin:0 15px; color:#b3a6ca;font-family: FiraCode}
+                .log-file {color:#c084fc;font-family: FiraCode}
+            
+                .log-entry-fatal,
+                .log-entry-error { background:#3b0d0d !important; border-left:4px solid #ff4b4b !important; }
+            
+                .log-entry-exception { background:#4a0000 !important; border-left:4px solid #ff1a1a !important; }
+            
+                .log-entry-warning {
+                    background:#3b320d !important;
+                    border-left:4px solid #facc15 !important;
+                    color:#fef9c3 !important;
+                }
+            
+                .log-entry-info {
+                    background:#0d3b1a !important;
+                    border-left:4px solid #22c55e !important;
+                }
+            
+                .log-entry-default {
+                    background:#2c203d !important;
+                    border-left:4px solid #b48ef7 !important;
+                }
+            
+                .log-badge-error,
+                .log-badge-fatal { background:#ff4b4b !important; }
+            
+                .log-badge-exception { background:#ff1a1a !important; color:#fff !important; }
+            
+                .log-badge-warning { background:#facc15 !important; color:#000 !important; }
+            
+                .log-badge-info { background:#22c55e !important; }
+            
+                .array-item { display:flex; align-items:flex-start; gap:10px; }
+                .key-label { color:#ff79c6; font-weight:bold; flex-shrink:0; }
+            
+                .arrow::before {
+                    content: "⇒";
+                    color: #8be9fd;
+                    font-weight: bold;
+                }
+            
+                .data-container { font-family:FiraCode; flex:1; min-width:0; }
+            
+                .array-wrapper { display:inline-flex; background:#201528; border-radius:5px; gap:8px; line-height:1.4; }
+            
+                .object-wrapper { display:inline-block; background:#201528; border-radius:6px; }
+            
+                .array-header, .object-header {
+                display: inline-flex;
+                align-items: flex-start;
+                gap: 6px;
+                cursor: pointer;
+                flex-direction: row;
+                justify-content: flex-start;
+            }
+                .type-bracket { color:#c678dd; font-weight:bold; font-size:1.1em; }
+                .array-title { color:#f1fa8c; font-size:0.92em; opacity:0.95; }
+            
+                .toggle {
+                    cursor: pointer;
+                    color: #c084fc;
+                    font-weight: bold;
+                    font-size: 22px;
+                    user-select: none;
+                    transition: transform 0.18s ease;
+                    margin-top: -3px;
+                }
+            
+                .array-wrapper.open > .toggle,
+                .object-wrapper.open > .toggle { transform: rotate(90deg); }
+            
+                .toggle-content { display:none; margin-top:8px; margin-right:20px; }
+            
+                .array-wrapper.open > .toggle-content,
+                .object-wrapper.open > .toggle-content { display:block; }
+            
+                .string-value { color:#8ef58a; font-family: IRANSans; }
+                .number-value { color:#d19a66; }
+                .boolean-value { color:#ff4b4b; font-weight:bold; }
+                .null-value { color:#ff5555; }
+                .object-class { color:#ffb86c; font-weight:bold; }
+            
+                </style>
+            </head>
+            
+            <body>
+                <div id="logEntries" class="log-entries"></div>
+            
+            <script>
+            document.addEventListener("DOMContentLoaded",  function(e) {
+                const nodes = document.querySelectorAll('.string-value');
+                const onlyBasicLatin = /^[\u0000-\u007F]*$/;
+            
+                nodes.forEach(node => {
+                    const text = node.textContent || "";
+            
+                    if (onlyBasicLatin.test(text)) {
+                        node.style.fontFamily = "FiraCode";
+                    }
+                });
+            });
+            
+            document.addEventListener("click", function(e) {
+                let header = e.target.closest(".array-header, .object-header");
+                if (!header) return;
+            
+                let wrapper = header.closest(".array-wrapper, .object-wrapper");
+                if (!wrapper) return;
+            
+                wrapper.classList.toggle("open");
+            });
+            
+            function updateLog(html) {
+                document.getElementById("logEntries").insertAdjacentHTML("beforeend", html);
+            }
+            </script>
+            
+            </body>
+            </html>
+            HTML;
 
         file_put_contents($this->logFilePath, $html, LOCK_EX);
     }
@@ -423,19 +422,15 @@ HTML;
             'exception' => get_class($e),
         ], 'EXCEPTION', [], $e->getFile(), $e->getLine(), $e->getTrace());
 
-        if (PHP_SAPI !== 'cli' && !headers_sent()) {
+        if ( PHP_SAPI !== 'cli' && !headers_sent() ) {
             http_response_code(500);
             header('Content-Type: text/html; charset=utf-8');
         }
 
         $message = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
-        $file = htmlspecialchars($e->getFile(), ENT_QUOTES, 'UTF-8');
-        $line = (int) $e->getLine();
-        echo "<div dir='ltr' style='font-family:monospace;background:#1e1e1e;color:#eee;padding:18px;border-radius:10px'>"
-             . "<b style='color:#ff6b6b'>" . htmlspecialchars(get_class($e), ENT_QUOTES, 'UTF-8') . "</b><br>"
-             . "<div style='margin-top:8px'>{$message}</div>"
-             . "<div style='margin-top:8px;color:#aaa'>{$file}:{$line}</div>"
-             . "<div style='margin-top:12px'>Full trace: <code>log.html</code></div></div>";
+        $file    = htmlspecialchars($e->getFile(), ENT_QUOTES, 'UTF-8');
+        $line    = (int) $e->getLine();
+        echo "<div dir='ltr' style='font-family:monospace;background:#1e1e1e;color:#eee;padding:18px;border-radius:10px'>" . "<b style='color:#ff6b6b'>" . htmlspecialchars(get_class($e), ENT_QUOTES, 'UTF-8') . "</b><br>" . "<div style='margin-top:8px'>{$message}</div>" . "<div style='margin-top:8px;color:#aaa'>{$file}:{$line}</div>" . "<div style='margin-top:12px'>Full trace: <code>log.html</code></div></div>";
     }
 
     public function shutdownHandler(): void {
@@ -474,7 +469,8 @@ class Log {
     public static function write( string $level, $data, array $context = [] ): void {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2] ?? [];
 
-        AdvancedLogger::getInstance()->log($data, $level, $context, $trace['file'] ?? null, $trace['line'] ?? null);
+        AdvancedLogger::getInstance()
+            ->log($data, $level, $context, $trace['file'] ?? null, $trace['line'] ?? null);
     }
 
     public static function debug( $data, array $context = [] ): void {
@@ -494,27 +490,4 @@ class Log {
     }
 }
 
-/* توابع کمکی کوتاه */
-function lg( $data, string $level = 'DEBUG', array $context = [] ): void {
-    Log::write($level, $data, $context);
-}
-
-function log( $data, string $level = 'DEBUG', array $context = [] ): void {
-    Log::write($level, $data, $context);
-}
-
-function dd( ...$vars ): never {
-    foreach ( $vars as $v ) {
-        Log::debug($v);
-    }
-    die;
-}
-
-function dump( ...$vars ): void {
-    foreach ( $vars as $v ) {
-        Log::debug($v);
-    }
-}
-
-/* فعال‌سازی خودکار */
 AdvancedLogger::getInstance();
