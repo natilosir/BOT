@@ -19,7 +19,7 @@
     ]
   },
   "require": {
-    "illuminate/http": "^13.29",
-    "illuminate/database": "^13.29"
+    "illuminate/http": "^13.0",
+    "illuminate/database": "^13.0"
   }
 }
