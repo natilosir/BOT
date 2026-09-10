@@ -5,15 +5,15 @@ namespace natilosir\bot;
 use app\Models\User;
 
 class State {
+    private function __construct( Request $request ) {
+        self::$request = $request;
+    }
+
     private static $states               = [];
     private static $default              = null;
     private static $autoloaderRegistered = false;
     private static $instance             = null;
     private static $request              = null;
-
-    private function __construct( Request $request ) {
-        self::$request = $request;
-    }
 
     public static function init(): void {
         if ( self::$instance === null ) {
@@ -62,7 +62,9 @@ class State {
     private static function getUserState() {
         try {
             $userId = self::$request->fromID;
-            $user   = User::where('user_id', $userId)->whereNotNull('state')->first();
+            $user   = User::where('user_id', $userId)
+                ->whereNotNull('state')
+                ->first();
 
             return $user ? $user->state : null;
         } catch ( \Exception $e ) {
@@ -78,8 +80,10 @@ class State {
             $user = User::where('user_id', $userId)
                 ->first();
 
-            $user->state = ( trim($state) !== '' ) ? trim($state) : null;
-            $user->save();
+            if ( $user ) {
+                $user->state = ( trim($state) !== '' ) ? trim($state) : null;
+                $user->save();
+            }
         } catch ( \Exception $e ) {
             lg("Error setting user state: " . $e->getMessage());
         }
@@ -91,6 +95,7 @@ class State {
 
             $user = User::where('user_id', $userId)
                 ->first();
+
             if ( $user ) {
                 $user->state = null;
                 $user->save();

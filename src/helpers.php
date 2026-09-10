@@ -2,8 +2,6 @@
 
 use natilosir\bot\Log;
 
-require_once __DIR__ . '/log.php';
-
 if ( !function_exists('lg') ) {
     function lg( ...$data ): void {
         foreach ( $data as $d ) {

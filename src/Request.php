@@ -2,13 +2,19 @@
 
 namespace natilosir\bot;
 
+#[\AllowDynamicProperties]
 class Request {
+
+    public function __construct() {
+        $this->parseInput();
+        $this->parseRequest();
+    }
 
     public $updateId;
     public $request;
-    public $updateType;
 
     // COMMON FIELDS
+    public $updateType;
     public $chatID;
     public $fromID;
     public $firstName;
@@ -19,9 +25,9 @@ class Request {
     public $message_id;
     public $entities;
     public $caption;
-    public $chat_id;
 
     // MESSAGE FIELDS
+    public $chat_id;
     public $photo;
     public $audio;
     public $document;
@@ -38,41 +44,39 @@ class Request {
     public $new_chat_title;
     public $new_chat_photo;
     public $pinned_message;
-    public $reply_to_message;
 
     // QUERY FIELDS
+    public $reply_to_message;
     public $query_id;
     public $callbackData;
     public $inline_query_id;
     public $query;
-    public $offset;
 
     // PAYMENT FIELDS
+    public $offset;
     public $shipping_query_id;
     public $invoice_payload;
     public $shipping_address;
     public $pre_checkout_query_id;
     public $currency;
     public $total_amount;
-    public $order_info;
 
     // POLL FIELDS
+    public $order_info;
     public $poll_id;
     public $question;
     public $options;
     public $total_voter_count;
     public $is_closed;
     public $is_anonymous;
-    public $option_ids;
 
     // CHAT MEMBER
-    public $old_chat_member;
-    public $new_chat_member;
-    public $bio;
-    public $invite_link;
-
+    public  $option_ids;
+    public  $old_chat_member;
+    public  $new_chat_member;
+    public  $bio;
+    public  $invite_link;
     private $data;
-
     private $updateTypes = [
         'message',
         'edited_message',
@@ -89,10 +93,18 @@ class Request {
         'chat_member',
         'chat_join_request',
     ];
+    private $dynamicData = [];
 
-    public function __construct() {
-        $this->parseInput();
-        $this->parseRequest();
+    public function __get( $name ) {
+        return $this->dynamicData[$name] ?? null;
+    }
+
+    public function __set( $name, $value ) {
+        $this->dynamicData[$name] = $value;
+    }
+
+    public function __isset( $name ) {
+        return isset($this->dynamicData[$name]);
     }
 
     private function parseInput() {

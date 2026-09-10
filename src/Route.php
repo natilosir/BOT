@@ -3,47 +3,47 @@
 namespace natilosir\bot;
 
 class Route {
-    private static $routes               = [];
-    private static $default              = null;
-    private static $autoloaderRegistered = false;
-    private static $instance             = null;
-    private static $request              = null;
-    private static $configclear          = true;
-    private static $states               = [];
-    private static bool $dispatchRegistered = false;
-    private static bool $dispatched = false;
-
     public function __construct( Request $request ) {
         self::$request = $request ?? new Request();
     }
+
+    private static      $routes               = [];
+    private static      $default              = null;
+    private static      $autoloaderRegistered = false;
+    private static      $instance             = null;
+    private static      $request              = null;
+    private static      $configclear          = true;
+    private static      $states               = [];
+    private static bool $dispatchRegistered   = false;
+    private static bool $dispatched           = false;
 
     public static function init(): void {
         self::dispatch();
     }
 
     public static function dispatch(): void {
-        if (self::$dispatched) {
+        if ( self::$dispatched ) {
             return;
         }
         self::$dispatched = true;
-        self::processRequest();
+        lg(self::processRequest());
     }
 
     private static function registerAutoDispatch(): void {
-        if (self::$dispatchRegistered) {
+        if ( self::$dispatchRegistered ) {
             return;
         }
         self::$dispatchRegistered = true;
         register_shutdown_function(static function (): void {
-            $lastError = error_get_last();
-            $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR];
-            if ($lastError === null || !in_array($lastError['type'], $fatalTypes, true)) {
+            $lastError  = error_get_last();
+            $fatalTypes = [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ];
+            if ( $lastError === null || !in_array($lastError['type'], $fatalTypes, true) ) {
                 self::dispatch();
             }
         });
     }
 
-    public static function processRequest(): void {
+    public static function processRequest() {
         self::$request = new Request();
         $input         = self::normalizeInput(self::$request->text);
         lg("Request Input: " . $input);
@@ -53,16 +53,14 @@ class Route {
                 State::set(self::$states[$input]);
                 self::$configclear = false;
             }
-            self::runAction(self::$routes[$input], self::$request);
-            return;
+            return self::runAction(self::$routes[$input], self::$request);
         }
 
         require_once dirname(__DIR__, 4) . '/Router/state.php';
         State::init();
 
         if ( self::$default ) {
-            self::runAction(self::$default, self::$request);
-            return;
+            return self::runAction(self::$default, self::$request);
         }
 
         throw new \Exception("Route not found for input: " . $input);

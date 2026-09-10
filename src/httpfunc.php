@@ -2,7 +2,7 @@
 
 use natilosir\bot\Http;
 
-$config = require __DIR__ . '/../../../../config.php';
+$config = require PATH . '/config.php';
 $BOT_TOKEN = $config['bot']['token'];
 
 defined('api') || define('api', 'https://api.telegram.org/bot' . $BOT_TOKEN . '/');

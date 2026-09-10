@@ -54,16 +54,49 @@ class bot {
         ];
 
         if ( $caption ) {
-            $data['caption'] = $caption;
+            $data['caption']    = mb_convert_encoding($caption, 'UTF-8', 'UTF-8');
+            $data['parse_mode'] = 'HTML';
         }
+
         if ( $reply_to_message_id ) {
             $data['reply_to_message_id'] = $reply_to_message_id;
         }
+
         if ( $reply_markup ) {
             $data['reply_markup'] = $reply_markup;
         }
+
         if ( $photo ) {
-            $data['photo'] = $photo;
+            if ( is_array($photo) && isset($photo['tmp_name']) ) {
+                $data['photo'] = $photo;
+            }
+
+            elseif ( is_string($photo) && file_exists($photo) ) {
+                $data['photo'] = [
+                    'tmp_name' => $photo,
+                    'name'     => basename($photo),
+                ];
+            }
+
+            elseif ( is_string($photo) && preg_match('/^https?:\/\//', $photo) ) {
+                $data['photo'] = $photo;
+            }
+
+            else {
+                $tempFile = tempnam(sys_get_temp_dir(), 'tg_img_');
+                file_put_contents($tempFile, $photo);
+
+                $data['photo'] = [
+                    'tmp_name' => $tempFile,
+                    'name'     => 'image.jpg',
+                ];
+
+                register_shutdown_function(function () use ( $tempFile ) {
+                    if ( file_exists($tempFile) ) {
+                        @unlink($tempFile);
+                    }
+                });
+            }
         }
 
         return http('sendPhoto', $data);
