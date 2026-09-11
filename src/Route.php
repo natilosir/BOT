@@ -4,7 +4,7 @@ namespace natilosir\bot;
 
 class Route {
     public function __construct( Request $request ) {
-        self::$request = $request ?? new Request();
+        self::$request = $request;
     }
 
     private static      $routes               = [];
@@ -44,8 +44,7 @@ class Route {
     }
 
     public static function processRequest() {
-        self::$request = new Request();
-        $input         = self::normalizeInput(self::$request->text);
+        $input = self::normalizeInput(self::$request->text ?? '');
         lg("Request Input: " . $input);
 
         if ( !empty($input) && isset(self::$routes[$input]) ) {
@@ -56,7 +55,14 @@ class Route {
             return self::runAction(self::$routes[$input], self::$request);
         }
 
-        State::init();
+        $statePath = paths()->route('state.php');
+        require_once $statePath;
+
+        $stateHandled = State::init(self::$request);
+
+        if ( $stateHandled ) {
+            return;
+        }
 
         if ( self::$default ) {
             return self::runAction(self::$default, self::$request);
@@ -70,7 +76,7 @@ class Route {
         if ( $lastRoute ) {
             self::$states[$lastRoute] = $stateName;
         }
-        return new self(self::$request ?? new Request());
+        return new self(self::$request);
     }
 
     public static function add( $uri, $action ) {
@@ -89,7 +95,7 @@ class Route {
     public static function def( $default ) {
         self::registerAutoDispatch();
         self::$default = $default;
-        return new self(self::$request ?? new Request());
+        return new self(self::$request);
     }
 
     public static function registerRoute( $uri, $action ) {

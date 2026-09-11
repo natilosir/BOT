@@ -19,7 +19,7 @@ class State {
         if ( self::$instance === null ) {
             $request = new Request();
             if ( $request === null ) {
-                throw new \RuntimeException('Request initialization failed');
+                throw new RuntimeException('Request initialization failed');
             }
             self::$instance = new self($request);
             self::processRequest();
