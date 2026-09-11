@@ -1,6 +1,6 @@
 <?php
 
-namespace natilosir\bot;
+namespace natilosir\bot\http;
 
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest as IlluminatePendingRequest;

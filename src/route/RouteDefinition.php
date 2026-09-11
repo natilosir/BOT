@@ -1,5 +1,6 @@
 <?php
-namespace natilosir\bot;
+
+namespace natilosir\bot\route;
 
 class RouteDefinition {
     private $uris;

@@ -1,28 +1,14 @@
 <?php
 
-namespace natilosir\bot;
+namespace natilosir\bot\log;
 
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 use Throwable;
 
-date_default_timezone_set('Asia/Tehran');
-if ( PHP_SAPI !== 'cli' && !headers_sent() ) {
-    header('Content-Type: text/html; charset=utf-8');
-}
-if ( function_exists('mb_internal_encoding') ) {
-    mb_internal_encoding('UTF-8');
-}
-
-class DumpHeaderExtractor extends HtmlDumper {
-    public function getHeader() {
-        return parent::getDumpHeader();
-    }
-}
-
 class AdvancedLogger {
     public function __construct() {
-        $this->logFilePath = PATH . '/log.html';
+        $this->logFilePath = paths()->log;
         $this->startTime   = microtime(true);
         $this->startMemory = memory_get_usage();
         $this->entryCount  = 0;
@@ -59,8 +45,7 @@ class AdvancedLogger {
     public function initialize(): void {
         if ( file_exists($this->logFilePath) ) @unlink($this->logFilePath);
         error_reporting(E_ALL);
-        ini_set('display_errors', '1');
-        set_error_handler([ $this, 'errorHandler' ]);
+        ini_set('display_errors', '0');
         set_exception_handler([ $this, 'exceptionHandler' ]);
         register_shutdown_function([ $this, 'shutdownHandler' ]);
         $this->createLogFile();
@@ -249,7 +234,7 @@ class AdvancedLogger {
             .trace-sec{background:rgba(124,58,237,.035);border-radius:14px;padding:14px}
             .trace-item{transition:.2s ease}
             .trace-item:hover{transform:translateX(-3px)}
-
+            
             pre.sf-dump{font-family:'FiraCode',monospace!important;background:transparent!important;
               direction:ltr!important;text-align:left;text-shadow:none;padding:12px;border-radius:8px;margin:0}
             pre.sf-dump::selection{background-color:#f5f5f5;color:#1a1a1a}
@@ -632,10 +617,10 @@ class AdvancedLogger {
     }
 
     public function log( $data, string $level, array $context = [], ?string $file = null, ?int $line = null, ?array $trace = null, ?string $callerClass = null, ?string $callerFunction = null ): void {
-        $date = date('Y-m-d H:i:s');
+        $date = verta();
         $l    = strtolower($level);
 
-        // auto-detect caller from trace if not provided
+        set_error_handler([ $this, 'errorHandler' ]);
         if ( $callerClass === null && $callerFunction === null && $trace ) {
             $found          = $this->findCallerFromTrace($trace);
             $callerClass    = $found['class'];
@@ -654,7 +639,7 @@ class AdvancedLogger {
         $callerHtml = '<span class="log-caller" title="Click to toggle entry">' . $safeCaller . '</span>';
 
         $content   = $this->formatDataWithSymfony($data, $callerHtml);
-        $trace = $trace ? $this->normalizeTrace($trace) : [];
+        $trace     = $trace ? $this->normalizeTrace($trace) : [];
         $traceHTML = $trace ? $this->formatTrace($trace) : '';
 
         $shortMessage = $this->extractShortMessage($data);
@@ -708,17 +693,17 @@ class AdvancedLogger {
         return $output;
     }
 
-    private function normalizeTrace(array $trace): array {
+    private function normalizeTrace( array $trace ): array {
         $out = [];
-        foreach ($trace as $frame) {
+        foreach ( $trace as $frame ) {
             $class = $frame['class'] ?? '';
-            if ($class === 'natilosir\\bot\\Log' || strpos($class, 'AdvancedLogger') !== false) {
+            if ( $class === 'natilosir\\bot\\Log' || strpos($class, 'AdvancedLogger') !== false ) {
                 continue;
             }
-            if (isset($frame['file'])) {
+            if ( isset($frame['file']) ) {
                 $out[] = $frame;
             }
-            if (count($out) >= 9) {
+            if ( count($out) >= 9 ) {
                 break;
             }
         }
@@ -774,52 +759,3 @@ class AdvancedLogger {
         file_put_contents($this->logFilePath, "</div></body></html>", FILE_APPEND | LOCK_EX);
     }
 }
-
-class Log {
-    public static function info( $data, array $context = [] ): void {
-        self::write('INFO', $data, $context);
-    }
-
-    public static function write( string $level, $data, array $context = [] ): void {
-        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 20);
-        $caller = [];
-        foreach ($bt as $frame) {
-            $class = $frame['class'] ?? '';
-            if ($class === 'natilosir\\bot\\Log' || strpos($class, 'AdvancedLogger') !== false) {
-                continue;
-            }
-            if (isset($frame['file'])) {
-                $caller = $frame;
-                break;
-            }
-        }
-        $self   = $bt[1] ?? [];
-
-        if ( isset($self['class']) && isset($caller['class'])
-             && $self['class'] === 'natilosir\\bot\\Log'
-             && $caller['class'] === 'natilosir\\bot\\Log' ) {
-            $caller = $bt[3] ?? $caller;
-        }
-
-        AdvancedLogger::getInstance()
-            ->log($data, $level, $context, $caller['file'] ?? null, $caller['line'] ?? null, null, $caller['class'] ?? null, $caller['function'] ?? null);
-    }
-
-    public static function debug( $data, array $context = [] ): void {
-        self::write('DEBUG', $data, $context);
-    }
-
-    public static function error( $data, array $context = [] ): void {
-        self::write('ERROR', $data, $context);
-    }
-
-    public static function warning( $data, array $context = [] ): void {
-        self::write('WARNING', $data, $context);
-    }
-
-    public static function notice( $data, array $context = [] ): void {
-        self::write('NOTICE', $data, $context);
-    }
-}
-
-AdvancedLogger::getInstance();

@@ -1,6 +1,6 @@
 <?php
 
-namespace natilosir\bot;
+namespace natilosir\bot\http;
 
 use Illuminate\Http\Client\Response as IlluminateResponse;
 use JsonSerializable;

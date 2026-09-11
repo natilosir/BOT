@@ -2,7 +2,7 @@
 
 namespace natilosir\bot;
 
-require_once 'httpfunc.php';
+require_once __DIR__ . '/http/httpfunc.php';
 
 class bot {
     private static $keyboard = [];

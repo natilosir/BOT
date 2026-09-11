@@ -3,6 +3,7 @@
 namespace natilosir\bot;
 
 use Illuminate\Http\Client\Factory;
+use natilosir\bot\http\PendingRequest;
 
 /**
  * Static HTTP gateway backed by Illuminate HTTP Client, without Facades/Container.

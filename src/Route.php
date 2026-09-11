@@ -56,7 +56,6 @@ class Route {
             return self::runAction(self::$routes[$input], self::$request);
         }
 
-        require_once dirname(__DIR__, 4) . '/Router/state.php';
         State::init();
 
         if ( self::$default ) {

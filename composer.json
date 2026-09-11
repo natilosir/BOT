@@ -1,6 +1,6 @@
 {
   "name": "natilosir/bot",
-  "description": "A simple PHP library for managing Jalali (Shamsi) dates.",
+  "description": "A simple and flexible PHP package for building Telegram bots, featuring route handling, user state management, logging, path helpers, and an Illuminate-based container.",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -14,12 +14,12 @@
       "natilosir\\bot\\": "src/"
     },
     "files": [
-      "src/helpers.php",
-      "src/bootstrap.php"
+      "src/helpers.php"
     ]
   },
   "require": {
-    "illuminate/http": "^13.0",
-    "illuminate/database": "^13.0"
+    "illuminate/http": "*",
+    "illuminate/database": "*",
+    "illuminate/container": "*"
   }
 }
