@@ -3,9 +3,7 @@
 use Illuminate\Http\Client\ConnectionException;
 use natilosir\bot\Http;
 
-$config    = require paths()->config;
-$BOT_TOKEN = $config['bot']['token'];
-
+$BOT_TOKEN = paths()->config('bot.token');
 defined('api') || define('api', 'https://api.telegram.org/bot' . $BOT_TOKEN . '/');
 
 function http( $uri, $data = [], $method = 'POST' ) {

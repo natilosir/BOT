@@ -8,28 +8,29 @@ class Log {
     }
 
     public static function write( string $level, $data, array $context = [] ): void {
-        $bt     = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 20);
-        $caller = [];
+        $bt = debug_backtrace();
+
+        $lastInternal  = null;
+        $firstExternal = null;
+
         foreach ( $bt as $frame ) {
-            $class = $frame['class'] ?? '';
-            if ( $class === 'natilosir\\bot\\Log' || strpos($class, 'AdvancedLogger') !== false ) {
-                continue;
+            if ( self::isInternalFrame($frame) ) {
+                $lastInternal = $frame;
             }
-            if ( isset($frame['file']) ) {
-                $caller = $frame;
+            else {
+                $firstExternal = $frame;
                 break;
             }
         }
-        $self = $bt[1] ?? [];
 
-        if ( isset($self['class']) && isset($caller['class'])
-             && $self['class'] === 'natilosir\\bot\\Log'
-             && $caller['class'] === 'natilosir\\bot\\Log' ) {
-            $caller = $bt[3] ?? $caller;
-        }
+        $callerFile = $lastInternal['file'] ?? $firstExternal['file'] ?? null;
+        $callerLine = $lastInternal['line'] ?? $firstExternal['line'] ?? null;
+
+        $callerClass    = $firstExternal['class'] ?? null;
+        $callerFunction = $firstExternal['function'] ?? null;
 
         AdvancedLogger::getInstance()
-            ->log($data, $level, $context, $caller['file'] ?? null, $caller['line'] ?? null, null, $caller['class'] ?? null, $caller['function'] ?? null);
+            ->log($data, $level, $context, $callerFile, $callerLine, $bt, $callerClass, $callerFunction);
     }
 
     public static function debug( $data, array $context = [] ): void {
@@ -46,5 +47,17 @@ class Log {
 
     public static function notice( $data, array $context = [] ): void {
         self::write('NOTICE', $data, $context);
+    }
+
+    private static function isInternalFrame( array $frame ): bool {
+        $class = $frame['class'] ?? '';
+        $func  = strtolower($frame['function'] ?? '');
+
+        if ( stripos($class, 'AdvancedLogger') !== false ) return true;
+        if ( stripos($class, 'natilosir\\bot\\log\\') !== false ) return true;
+
+        if ( in_array($func, [ 'lg', 'log', 'dad', 'dd' ], true) ) return true;
+
+        return false;
     }
 }

@@ -4,6 +4,7 @@ namespace natilosir\bot;
 
 use DateTimeZone;
 use Illuminate\Container\Container;
+use Illuminate\Support\Arr;
 use natilosir\bot\log\AdvancedLogger;
 use natilosir\Verta\Verta;
 use RuntimeException;
@@ -23,23 +24,21 @@ class Bootstrap extends Container {
         'base_path'    => '',
         'app_path'     => 'app',
         'route_path'   => 'Router',
-        'config_path'  => 'config',
+        'config_path'  => 'config.php',
         'storage_path' => 'storage',
-        'log_path'     => 'storage/logs',
+        'log_path'     => 'log.html',
     ];
 
     protected array $paths   = [];
-    protected array $config  = [
-        'timezone' => 'Asia/Tehran',
-        'locale'   => 'fa',
-        'calendar' => 'jalali',
-    ];
+    protected array $config  = [];
     protected array $files   = [
         'route.php',
     ];
     protected array $classes = [
         AdvancedLogger::class,
     ];
+
+    protected ?array $dotConfig = null;
 
     protected function resolvePaths( array $custom ): void {
         $basePath = $custom['base_path'] ?? dirname(__DIR__);
@@ -125,26 +124,88 @@ class Bootstrap extends Container {
     }
 
     protected function loadConfig(): void {
-        if ( !empty($this->config['timezone']) ) {
-            date_default_timezone_set($this->config['timezone']);
-        }
+        $configPath = $this->paths['config_path'] ?? null;
 
-        if ( class_exists(Verta::class, false) ) {
-            try {
-                Verta::setTimezone(new DateTimeZone($this->config['timezone']));
-            } catch ( \Throwable $e ) {
+        try {
+            if ( ( !is_file($configPath) && !is_dir($configPath) ) ) {
+                throw new RuntimeException("Config file path not found: {$configPath}");
             }
-            try {
-                if ( !empty($this->config['locale']) ) Verta::setLocale($this->config['locale']);
-            } catch ( \Throwable $e ) {
-            }
-        }
 
-        $GLOBALS['__APP_CONFIG__'] = $this->config;
+            if ( is_file($configPath) ) {
+                $values = require $configPath;
+
+                if ( is_array($values) ) {
+                    $this->config = $values;
+                }
+            }
+            elseif ( is_dir($configPath) ) {
+                $files = glob($configPath . DIRECTORY_SEPARATOR . '*.php') ? : [];
+
+                $this->config = [];
+
+                foreach ( $files as $file ) {
+                    $key    = basename($file, '.php');
+                    $values = require $file;
+
+                    if ( !is_array($values) ) {
+                        continue;
+                    }
+
+                    $this->config[$key] = $values;
+                }
+            }
+
+            $this->dotConfig = null;
+
+            if ( !empty($this->config['timezone']) ) {
+                date_default_timezone_set($this->config['timezone']);
+            }
+
+            if ( class_exists(Verta::class, false) ) {
+                try {
+                    if ( !empty($this->config['timezone']) ) {
+                        Verta::setTimezone(new DateTimeZone($this->config['timezone']));
+                    }
+                } catch ( \Throwable $e ) {
+                    dd($e);
+                }
+                try {
+                    if ( !empty($this->config['locale']) ) {
+                        Verta::setLocale($this->config['locale']);
+                    }
+                } catch ( \Throwable $e ) {
+                    dd($e);
+                }
+            }
+        } catch ( \Throwable $e ) {
+            dd($e);
+        }
     }
 
-    public function config( string $key, mixed $default = null ): mixed {
-        return $this->config[$key] ?? $default;
+    public function config( string $key = '', mixed $default = null ): mixed {
+        if ( $key === '' ) {
+            return $this->config;
+        }
+
+        $this->dotConfig ??= Arr::dot($this->config);
+
+        if ( array_key_exists($key, $this->dotConfig) ) {
+            return $this->dotConfig[$key];
+        }
+
+        $segments = explode('.', $key);
+        $value    = $this->config;
+
+        foreach ( $segments as $segment ) {
+            if ( is_array($value) && array_key_exists($segment, $value) ) {
+                $value = $value[$segment];
+            }
+            else {
+                return $default;
+            }
+        }
+
+        return $value;
     }
 
     protected function loadFiles(): void {

@@ -73,6 +73,16 @@ if ( !function_exists('paths') ) {
                     return $this->resolve($name, (string) ( $arguments[0] ?? '' ));
                 }
 
+                public function config( string $key = '', mixed $default = null ): mixed {
+                    $app = Bootstrap::getInstance();
+
+                    if ( !$app instanceof Bootstrap ) {
+                        throw new RuntimeException('Bootstrap هنوز راه‌اندازی نشده است.');
+                    }
+
+                    return $app->config($key, $default);
+                }
+
                 private function resolve( string $name, string $path = '' ): string {
                     $app = Bootstrap::getInstance();
 

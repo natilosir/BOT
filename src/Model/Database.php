@@ -17,13 +17,11 @@ final class Database {
             throw new RuntimeException('illuminate/database is not installed. Run: composer install (or composer update illuminate/database).');
         }
 
-        $configFile = paths()->config;
-        if ( !is_file($configFile) ) {
-            throw new RuntimeException("Database config file not found: {$configFile}");
-        }
+        $db = paths()->config('database');
 
-        $config = require $configFile;
-        $db     = $config['database'] ?? [];
+        if ( !is_array($db) ) {
+            throw new RuntimeException("Database config not found in: " . paths()->config);
+        }
 
         foreach ( [ 'host', 'database', 'user' ] as $key ) {
             if ( !array_key_exists($key, $db) ) {

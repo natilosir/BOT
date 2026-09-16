@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 abstract class Model extends EloquentModel {
     public function __construct( array $attributes = [] ) {
-        Database::boot();
+        try {
+            Database::boot();
+        } catch ( \Exception $e ) {
+            dd($e);
+        }
+        
         parent::__construct($attributes);
     }
 

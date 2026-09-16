@@ -55,8 +55,7 @@ class Route {
             return self::runAction(self::$routes[$input], self::$request);
         }
 
-        $statePath = paths()->route('state.php');
-        require_once $statePath;
+        require_once paths()->route('state.php');
 
         $stateHandled = State::init(self::$request);
 

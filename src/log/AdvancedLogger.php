@@ -53,10 +53,21 @@ class AdvancedLogger {
 
     private function formatFilePath( ?string $file ): string {
         if ( !$file ) return '[unknown]';
-        if ( defined('PATH') ) {
-            $rootPath = constant('PATH');
-            if ( strpos($file, $rootPath) === 0 ) return substr($file, strlen($rootPath));
+
+        $rootPath = paths()->base;
+
+        if ( $rootPath ) {
+            $rootPath = rtrim($rootPath, '/\\');
+
+            $normalizedFile = str_replace('\\', '/', $file);
+            $normalizedRoot = str_replace('\\', '/', $rootPath);
+
+            if ( strpos($normalizedFile, $normalizedRoot) === 0 ) {
+                $short = substr($file, strlen($rootPath));
+                return ltrim($short, '/\\') ? : '[root]';
+            }
         }
+
         return $file;
     }
 
@@ -231,9 +242,6 @@ class AdvancedLogger {
             .log-entry{box-shadow:0 10px 35px rgba(0,0,0,.18)}
             .log-entry:hover{box-shadow:0 18px 50px rgba(124,58,237,.18)}
             .entry-head{background:linear-gradient(90deg,rgba(167,139,250,.04),transparent)}
-            .trace-sec{background:rgba(124,58,237,.035);border-radius:14px;padding:14px}
-            .trace-item{transition:.2s ease}
-            .trace-item:hover{transform:translateX(-3px)}
             
             pre.sf-dump{font-family:'FiraCode',monospace!important;background:transparent!important;
               direction:ltr!important;text-align:left;text-shadow:none;padding:12px;border-radius:8px;margin:0}
@@ -264,12 +272,24 @@ class AdvancedLogger {
             }
             pre.sf-dump .log-caller:active{transform:scale(.97)}
             
-            /* TRACE */
-            .trace-sec{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+            /* TRACE (Collapsible) */
+            .trace-sec{margin-top:14px;padding:14px;border-top:1px solid var(--border);
+              background:rgba(124,58,237,.035);border-radius:14px}
             .trace-title{font-family:'FiraCode',monospace;font-size:.75rem;color:var(--cyan);
-              margin-bottom:10px;letter-spacing:.03em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+              letter-spacing:.03em;text-transform:uppercase;display:flex;align-items:center;gap:8px;
+              cursor:pointer;user-select:none;padding:4px 6px;border-radius:8px;
+              transition:background .2s,color .2s}
+            .trace-title:hover{background:rgba(34,211,238,.08)}
             .trace-title::before{content:'';width:3px;height:12px;background:var(--cyan);border-radius:2px;
-              box-shadow:0 0 8px var(--cyan)}
+              box-shadow:0 0 8px var(--cyan);flex-shrink:0}
+            .trace-title .trace-chev{color:var(--text-3);font-size:.72rem;display:inline-block;
+              transition:transform .35s cubic-bezier(.4,0,.2,1),color .2s;line-height:1}
+            .trace-title:hover .trace-chev{color:var(--cyan)}
+            .trace-sec.open .trace-title .trace-chev{transform:rotate(90deg);color:var(--cyan)}
+            .trace-body{max-height:0;overflow:hidden;opacity:0;
+              transition:max-height .5s cubic-bezier(.4,0,.2,1),opacity .35s ease,margin-top .3s}
+            .trace-sec.open .trace-body{max-height:8000px;opacity:1;margin-top:10px}
+            
             .trace-item{padding:8px 12px;margin-bottom:6px;background:rgba(0,0,0,.2);
               border:1px solid var(--border);border-radius:10px;font-size:.8rem;
               font-family:'FiraCode',monospace;transition:all .2s;direction:ltr;text-align:left}
@@ -345,7 +365,6 @@ class AdvancedLogger {
                     <div class="brand-logo">🐛</div>
                     <div class="brand-text">
                       <h1>Debug Log</h1>
-                      <div class="sub">natilosir\bot • AdvancedLogger v4.3</div>
                     </div>
                   </div>
                   <div class="header-stats">
@@ -391,7 +410,6 @@ class AdvancedLogger {
                   <div class="fstat"><span>⚠️</span><span>Errors</span><span class="v" id="footerErrors">0</span></div>
                   <div class="fstat"><span>🕐</span><span>Updated</span><span class="v" id="footerTime">—</span></div>
                 </div>
-                <div class="brand-mark">Powered by <b>natilosir\bot</b> • AdvancedLogger v4.3</div>
               </footer>
             
             </div>
@@ -470,18 +488,28 @@ class AdvancedLogger {
             
               byId('btnExpand').addEventListener('click', function(){
                 document.querySelectorAll('.log-entry').forEach(function(e){ e.classList.add('open'); });
+                document.querySelectorAll('.trace-sec').forEach(function(e){ e.classList.add('open'); });
                 document.querySelectorAll('a.sf-dump-toggle').forEach(function(t){
                   if(!t.closest('.sf-dump-expanded')) t.click();
                 });
               });
               byId('btnCollapse').addEventListener('click', function(){
                 document.querySelectorAll('.log-entry').forEach(function(e){ e.classList.remove('open'); });
+                document.querySelectorAll('.trace-sec').forEach(function(e){ e.classList.remove('open'); });
               });
               byId('btnClear').addEventListener('click', function(){
                 searchInput.value = ''; state.search = ''; applyFilters(); searchInput.focus();
               });
             
               byId('logEntries').addEventListener('click', function(e){
+                // 0) toggle backtrace section
+                var traceTitle = e.target.closest('.trace-title');
+                if(traceTitle){
+                  e.stopPropagation();
+                  traceTitle.parentElement.classList.toggle('open');
+                  return;
+                }
+            
                 // 1) copy full entry
                 var copyBtn = e.target.closest('.copy-btn');
                 if(copyBtn){
@@ -497,6 +525,7 @@ class AdvancedLogger {
                   }, 1600);
                   return;
                 }
+            
                 // 2) copy path (entry-head file-mi + trace file-line)
                 var copyPath = e.target.closest('.copy-path');
                 if(copyPath){
@@ -505,6 +534,7 @@ class AdvancedLogger {
                   showToast('Path copied');
                   return;
                 }
+            
                 // 3) click on caller inside dump → toggle entry
                 var caller = e.target.closest('.log-caller');
                 if(caller){
@@ -513,6 +543,7 @@ class AdvancedLogger {
                   if(le) le.classList.toggle('open');
                   return;
                 }
+            
                 // 4) click on head → toggle entry
                 var head = e.target.closest('.entry-head');
                 if(head){ head.parentElement.classList.toggle('open'); }
@@ -584,7 +615,8 @@ class AdvancedLogger {
     }
 
     public function errorHandler( int $errno, string $errstr, string $errfile, int $errline ): bool {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
+        $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS);
+
         $this->log([ 'message' => $errstr ], $this->logLevels[$errno] ?? 'ERROR', [], $errfile, $errline, $trace);
         return true;
     }
@@ -711,8 +743,11 @@ class AdvancedLogger {
     }
 
     private function formatTrace( array $trace ): string {
-        $html = "<div class='trace-sec'><div class='trace-title'>⚡ Backtrace (" . count($trace) . " frames)</div>";
-        foreach ( $trace as $i => $t ) {
+        $html = "<div class='trace-sec'>";
+        $html .= "<div class='trace-title'><span class='trace-chev'>▶</span>⚡ Backtrace (" . count($trace) . " frames)</div>";
+        $html .= "<div class='trace-body'>";
+
+        foreach ( array_reverse($trace) as $i => $t ) {
             $file  = $this->formatFilePath($t['file'] ?? null);
             $line  = $t['line'] ?? '-';
             $func  = $t['function'] ?? '?';
@@ -727,12 +762,14 @@ class AdvancedLogger {
             $safeLine = htmlspecialchars((string) $line, ENT_QUOTES, 'UTF-8');
             $safePath = htmlspecialchars($fullPath, ENT_QUOTES, 'UTF-8');
 
-            $html .= "<div class='trace-item'>" . "<span class='num'>#{$i}</span>" . "<span class='fn'>{$safeFunc}()</span><br>" . "<span class='file-line copy-path' " . "data-path='{$safePath}' " . "title='Click to copy path'>" . "📄 {$safeFile}:{$safeLine}" . "</span>" . "</div>";
+            $html .= "<div class='trace-item'>" . "<span class='num'>#{$i}</span>" . "<span class='fn'>{$safeFunc}()</span><br>" . "<span class='file-line copy-path' data-path='{$safePath}' title='Click to copy path'>" . "📄 {$safeFile}:{$safeLine}</span></div>";
+
             if ( !empty($t['args']) ) {
                 $html .= "<div style='margin:4px 0 10px 20px'>" . $this->formatDataWithSymfony($t['args']) . "</div>";
             }
         }
-        return $html . "</div>";
+
+        return $html . "</div></div>";
     }
 
     public function exceptionHandler( Throwable $e ): void {
