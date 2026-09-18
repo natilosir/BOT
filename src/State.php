@@ -3,6 +3,7 @@
 namespace natilosir\bot;
 
 use app\Models\User;
+use Exception;
 
 class State {
     private function __construct( Request $request ) {
@@ -67,7 +68,7 @@ class State {
                 ->first();
 
             return $user ? $user->state : null;
-        } catch ( \Exception $e ) {
+        } catch ( Exception $e ) {
             lg("Error getting user state: " . $e->getMessage());
             return null;
         }
@@ -84,7 +85,7 @@ class State {
                 $user->state = ( trim($state) !== '' ) ? trim($state) : null;
                 $user->save();
             }
-        } catch ( \Exception $e ) {
+        } catch ( Exception $e ) {
             lg("Error setting user state: " . $e->getMessage());
         }
     }
@@ -100,7 +101,7 @@ class State {
                 $user->state = null;
                 $user->save();
             }
-        } catch ( \Exception $e ) {
+        } catch ( Exception $e ) {
             lg("Error clearing user state: " . $e->getMessage());
         }
     }
@@ -144,7 +145,7 @@ class State {
                 lg("Calling Controller: {$action}::__invoke");
                 return self::callController($action, '__invoke', $request);
             }
-        } catch ( \Exception $e ) {
+        } catch ( Exception $e ) {
             lg("Error in runAction: " . $e->getMessage());
             echo "An error occurred. Please try again later.";
             die();
@@ -159,7 +160,7 @@ class State {
             }
 
             if ( !class_exists($controller) ) {
-                throw new \Exception("Controller class not found: {$controller}");
+                throw new Exception("Controller class not found: {$controller}");
             }
 
             $instance = new $controller();
@@ -170,11 +171,11 @@ class State {
                     $instance->__invoke($request);
                     die();
                 }
-                throw new \Exception("Method not found: {$controller}::{$method}");
+                throw new Exception("Method not found: {$controller}::{$method}");
             }
             $instance->$method($request);
             die();
-        } catch ( \Exception $e ) {
+        } catch ( Exception $e ) {
             echo "Error: " . $e->getMessage();
             die();
         }

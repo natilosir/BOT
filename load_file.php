@@ -27,7 +27,7 @@ if (isset($_GET['file'])) {
         http_response_code(403);
     }
 } elseif (isset($_GET['folder'])) {
-    date_default_timezone_set('Asia/Tehran'); // تنظیم منطقه زمانی
+    date_default_timezone_set('Asia/Tehran');
 
     $folderUrl = explode('/', trim($_GET['folder'], '/'));
     
@@ -43,7 +43,7 @@ if (isset($_GET['file'])) {
         $files = scandir($folderPath);
         $result[] = [
             'name' => '../',
-            'slug' => implode('/', array_slice($folderUrl, 0, -1)), // اصلاح شده
+            'slug' => implode('/', array_slice($folderUrl, 0, -1)), 
             'type' => true
         ];
 

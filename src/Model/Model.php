@@ -2,16 +2,17 @@
 
 namespace natilosir\bot\Model;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 abstract class Model extends EloquentModel {
     public function __construct( array $attributes = [] ) {
         try {
             Database::boot();
-        } catch ( \Exception $e ) {
+        } catch ( Exception $e ) {
             dd($e);
         }
-        
+
         parent::__construct($attributes);
     }
 

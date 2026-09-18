@@ -2,7 +2,9 @@
 
 namespace natilosir\bot;
 
-#[\AllowDynamicProperties]
+use AllowDynamicProperties;
+
+#[AllowDynamicProperties]
 class Request {
 
     public function __construct() {

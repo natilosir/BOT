@@ -2,6 +2,8 @@
 
 namespace natilosir\bot;
 
+use Exception;
+
 class Route {
     public function __construct( Request $request ) {
         self::$request = $request;
@@ -67,7 +69,7 @@ class Route {
             return self::runAction(self::$default, self::$request);
         }
 
-        throw new \Exception("Route not found for input: " . $input);
+        throw new Exception("Route not found for input: " . $input);
     }
 
     public static function state( $stateName ) {
@@ -141,7 +143,7 @@ class Route {
         }
 
         if ( !class_exists($controller) ) {
-            throw new \Exception("Controller class not found: {$controller}");
+            throw new Exception("Controller class not found: {$controller}");
         }
 
         $instance = new $controller();
@@ -150,7 +152,7 @@ class Route {
             if ( method_exists($instance, '__invoke') ) {
                 return $instance->__invoke($request);
             }
-            throw new \Exception("Method not found: {$controller}::{$method}");
+            throw new Exception("Method not found: {$controller}::{$method}");
         }
         if ( self::$configclear ) {
             State::clear();

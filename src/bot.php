@@ -2,217 +2,259 @@
 
 namespace natilosir\bot;
 
-require_once __DIR__ . '/http/httpfunc.php';
+use natilosir\bot\bot\BotManager;
 
-class bot {
-    private static $keyboard = [];
-
-    public static function clearCache() {
-        self::$keyboard = [];
-    }
-
-    public static function row( $buttons ) {
-        self::$keyboard[] = $buttons;
-
-        return new self();
-    }
-
-    public static function column( $text, $callback_data = null, $url = null ) {
-        $button = [ 'text' => $text ];
-        if ( $callback_data ) {
-            $button['callback_data'] = $callback_data;
-        }
-        if ( $url ) {
-            $button['url'] = $url;
-        }
-
-        return $button;
-    }
-
-    public static function sendChatAction( $chatID, $action ) {
-        $data = [
-            'chat_id' => $chatID,
-            'action'  => $action,
-        ];
-
-        return http('sendChatAction', $data);
-    }
-
-    public static function alert( $query_id, $text, $show_alert = false ) {
-        $data = [
-            'callback_query_id' => $query_id,
-            'text'              => $text,
-            'show_alert'        => $show_alert ? 'true' : 'false',
-        ];
-
-        return http('answerCallbackQuery', $data);
-    }
-
-    public static function sendPhoto( $chatID, $caption = null, $photo = null, $reply_to_message_id = null, $reply_markup = null ) {
-        $data = [
-            'chat_id' => $chatID,
-        ];
-
-        if ( $caption ) {
-            $data['caption']    = mb_convert_encoding($caption, 'UTF-8', 'UTF-8');
-            $data['parse_mode'] = 'HTML';
-        }
-
-        if ( $reply_to_message_id ) {
-            $data['reply_to_message_id'] = $reply_to_message_id;
-        }
-
-        if ( $reply_markup ) {
-            $data['reply_markup'] = $reply_markup;
-        }
-
-        if ( $photo ) {
-            if ( is_array($photo) && isset($photo['tmp_name']) ) {
-                $data['photo'] = $photo;
-            }
-
-            elseif ( is_string($photo) && file_exists($photo) ) {
-                $data['photo'] = [
-                    'tmp_name' => $photo,
-                    'name'     => basename($photo),
-                ];
-            }
-
-            elseif ( is_string($photo) && preg_match('/^https?:\/\//', $photo) ) {
-                $data['photo'] = $photo;
-            }
-
-            else {
-                $tempFile = tempnam(sys_get_temp_dir(), 'tg_img_');
-                file_put_contents($tempFile, $photo);
-
-                $data['photo'] = [
-                    'tmp_name' => $tempFile,
-                    'name'     => 'image.jpg',
-                ];
-
-                register_shutdown_function(function () use ( $tempFile ) {
-                    if ( file_exists($tempFile) ) {
-                        @unlink($tempFile);
-                    }
-                });
-            }
-        }
-
-        return http('sendPhoto', $data);
-    }
-
-    public static function editPhotoCaption( $chatID, $message_id, $caption, $reply_markup = null ) {
-        $data = [
-            'chat_id'    => $chatID,
-            'message_id' => $message_id,
-            'caption'    => $caption,
-            'parse_mode' => 'HTML',
-        ];
-
-        if ( $reply_markup ) {
-            $data['reply_markup'] = $reply_markup;
-        }
-
-        return http('editMessageCaption', $data);
-    }
-
-    public static function forwardMessage( $chatID, $from_chat_id, $message_id ) {
-        $data = [
-            'chat_id'      => $chatID,
-            'from_chat_id' => $from_chat_id,
-            'message_id'   => $message_id,
-        ];
-
-        return http('forwardMessage', $data);
-    }
-
-    public static function deleteMessage( $chatID, $message_id ) {
-        $data = [
-            'chat_id'    => $chatID,
-            'message_id' => $message_id,
-        ];
-
-        return http('deleteMessage', $data);
-    }
-
-    public static function inline( $chatID, $second_OR_text, $message_id, $copy = false ) {
-        $reply_markup = json_encode([ 'inline_keyboard' => self::$keyboard ]);
-
-        if ( $copy === 'edit' ) {
-            return self::editMessageReplyMarkup($chatID, $message_id, $reply_markup);
-        }
-        if ( $copy ) {
-            return self::copyMessage($chatID, $second_OR_text, $message_id, $reply_markup);
-        }
-        else {
-            return self::sendMessage($chatID, $second_OR_text, $message_id, $reply_markup);
-        }
-    }
-
-    public static function editMessageReplyMarkup( $chatID, $message_id, $reply_markup = null ) {
-        $data = [
-            'chat_id'    => $chatID,
-            'message_id' => $message_id,
-        ];
-
-        if ( $reply_markup ) {
-            $data['reply_markup'] = $reply_markup;
-        }
-
-        return http('editMessageReplyMarkup', $data);
-    }
-
-    public static function copyMessage( $chatID, $second_chat_id, $message_id, $reply_markup = null ) {
-        $data = [
-            'chat_id'      => $chatID,
-            'from_chat_id' => $second_chat_id,
-            'message_id'   => $message_id,
-        ];
-
-        if ( $reply_markup ) {
-            $data['reply_markup'] = $reply_markup;
-        }
-
-        return http('copyMessage', $data);
-    }
-
-    public static function sendMessage( $chatID, $text, $reply_to_message_id = null, $reply_markup = null ) {
-        $data = [
-            'chat_id'    => $chatID,
-            'text'       => $text,
-            'parse_mode' => 'HTML',
-        ];
-
-        if ( $reply_markup ) {
-            $data['reply_markup'] = $reply_markup;
-        }
-        if ( $reply_to_message_id ) {
-            $data['reply_to_message_id'] = $reply_to_message_id;
-        }
-
-        return http('sendMessage', $data);
-    }
-
-    public static function keyboard( $chatID, $second_OR_text, $message_id, $copy = false, $resize = true, $one_time = false ) {
-        $reply_markup = [
-            'keyboard' => self::$keyboard,
-        ];
-
-        if ( $resize ) {
-            $reply_markup['resize_keyboard'] = $resize;
-        }
-
-        if ( $one_time ) {
-            $reply_markup['one_time_keyboard'] = $one_time;
-        }
-
-        $reply_markup = json_encode($reply_markup);
-        if ( $copy ) {
-            return self::copyMessage($chatID, $second_OR_text, $message_id, $reply_markup);
-        }
-        else {
-            return self::sendMessage($chatID, $second_OR_text, $message_id, $reply_markup);
-        }
+/**
+ * @method static mixed addStickerToSet( ...$args )
+ * @method static mixed alert( $query_id, $text, $show_alert = false )
+ * @method static mixed all()
+ * @method static mixed answerCallbackQuery( $callbackQueryIdOrData, $text = null, $showAlert = null, $url = null, $cacheTime = null )
+ * @method static mixed answerChatJoinRequestQuery( ...$args )
+ * @method static mixed answerGuestQuery( ...$args )
+ * @method static mixed answerInlineQuery( $inlineQueryIdOrData, $results = null, $cacheTime = null, $isPersonal = null, $nextOffset = null, $button = null )
+ * @method static mixed answerPreCheckoutQuery( $preCheckoutQueryIdOrData, $ok = null, $errorMessage = null )
+ * @method static mixed answerShippingQuery( $shippingQueryIdOrData, $ok = null, $shippingOptions = null, $errorMessage = null )
+ * @method static mixed answerWebAppQuery( $webAppQueryIdOrData, $result = null )
+ * @method static mixed api( string $method, array $data = [], string $httpMethod = 'POST' )
+ * @method static mixed appPath( string $path = '' )
+ * @method static mixed approveChatJoinRequest( $chatIdOrData, $userId = null )
+ * @method static mixed approveSuggestedPost( $chatIdOrData, $messageId = null, $sendDate = null )
+ * @method static mixed array()
+ * @method static mixed banChatMember( $chatIdOrData, $userId = null, $untilDate = null, $revokeMessages = null )
+ * @method static mixed banChatSenderChat( $chatIdOrData, $senderChatId = null )
+ * @method static mixed basePath( string $path = '' )
+ * @method static mixed body()
+ * @method static mixed clearCache()
+ * @method static mixed client()
+ * @method static mixed clientError()
+ * @method static mixed close( array $data = [] )
+ * @method static mixed closeForumTopic( $chatIdOrData, $messageThreadId = null )
+ * @method static mixed closeGeneralForumTopic( $chatIdOrData )
+ * @method static mixed column( $text, $callback_data = null, $url = null )
+ * @method static mixed config( string $key = '', mixed $default = null )
+ * @method static mixed configPath( string $path = '' )
+ * @method static mixed convertGiftToStars( ...$args )
+ * @method static mixed copyMessage( $chatID, $second_chat_id, $message_id, $reply_markup = null )
+ * @method static mixed copyMessageRaw( $chatID, $from_chat_id = null, $message_id = null, $message_thread_id = null, $direct_messages_topic_id = null, $video_start_timestamp = null, $caption = null, $parse_mode = null, $caption_entities = null, $show_caption_above_media = null, $disable_notification = null, $protect_content = null, $allow_paid_broadcast = null, $message_effect_id = null, $suggested_post_parameters = null, $reply_parameters = null, $reply_markup = null )
+ * @method static mixed copyMessages( $chatID, $from_chat_id = null, $message_ids = null, $message_thread_id = null, $direct_messages_topic_id = null, $disable_notification = null, $protect_content = null, $remove_caption = null )
+ * @method static mixed createChatInviteLink( $chatIdOrData, $name = null, $expireDate = null, $memberLimit = null, $createsJoinRequest = null )
+ * @method static mixed createChatSubscriptionInviteLink( $chatIdOrData, $name = null, $subscriptionPeriod = null, $subscriptionPrice = null )
+ * @method static mixed createForumTopic( $chatIdOrData, $name = null, $iconColor = null, $iconCustomEmojiId = null )
+ * @method static mixed createInvoiceLink( ...$args )
+ * @method static mixed createNewStickerSet( ...$args )
+ * @method static mixed dd()
+ * @method static mixed declineChatJoinRequest( $chatIdOrData, $userId = null )
+ * @method static mixed declineSuggestedPost( $chatIdOrData, $messageId = null, $comment = null )
+ * @method static mixed delete( string $url, array $data = [] )
+ * @method static mixed deleteAllMessageReactions( $chatID, $user_id = null, $actor_chat_id = null )
+ * @method static mixed deleteBusinessMessages( ...$args )
+ * @method static mixed deleteChatPhoto( $chatIdOrData )
+ * @method static mixed deleteChatStickerSet( $chatIdOrData )
+ * @method static mixed deleteEphemeralMessage( ...$args )
+ * @method static mixed deleteForumTopic( $chatIdOrData, $messageThreadId = null )
+ * @method static mixed deleteMessage( $chatID, $message_id )
+ * @method static mixed deleteMessageRaw( $chatID, $message_id = null )
+ * @method static mixed deleteMessageReaction( $chatID, $message_id = null, $user_id = null, $actor_chat_id = null )
+ * @method static mixed deleteMessages( $chatID, $message_ids = null )
+ * @method static mixed deleteMyCommands( $scopeOrData = null, $languageCode = null )
+ * @method static mixed deleteStickerFromSet( ...$args )
+ * @method static mixed deleteStickerSet( ...$args )
+ * @method static mixed deleteStory( ...$args )
+ * @method static mixed deleteWebhook( $dropPendingUpdatesOrData = null )
+ * @method static mixed editChatInviteLink( $chatIdOrData, $inviteLink = null, $name = null, $expireDate = null, $memberLimit = null, $createsJoinRequest = null )
+ * @method static mixed editChatSubscriptionInviteLink( $chatIdOrData, $inviteLink = null, $name = null )
+ * @method static mixed editEphemeralMessageCaption( ...$args )
+ * @method static mixed editEphemeralMessageMedia( ...$args )
+ * @method static mixed editEphemeralMessageReplyMarkup( ...$args )
+ * @method static mixed editEphemeralMessageText( ...$args )
+ * @method static mixed editForumTopic( $chatIdOrData, $messageThreadId = null, $name = null, $iconCustomEmojiId = null )
+ * @method static mixed editGeneralForumTopic( $chatIdOrData, $name = null )
+ * @method static mixed editMessageCaption( ...$args )
+ * @method static mixed editMessageChecklist( $business_connection_id, $chatID = null, $message_id = null, $checklist = null, $reply_markup = null )
+ * @method static mixed editMessageLiveLocation( ...$args )
+ * @method static mixed editMessageMedia( ...$args )
+ * @method static mixed editMessageReplyMarkup( $chatID, $message_id, $reply_markup = null )
+ * @method static mixed editMessageReplyMarkupRaw( ...$args )
+ * @method static mixed editMessageText( ...$args )
+ * @method static mixed editPhotoCaption( $chatID, $message_id, $caption, $reply_markup = null )
+ * @method static mixed editStory( ...$args )
+ * @method static mixed editUserStarSubscription( ...$args )
+ * @method static mixed errorHandler( int $errno, string $errstr, string $errfile, int $errline )
+ * @method static mixed exceptionHandler( Throwable $e )
+ * @method static mixed exportChatInviteLink( $chatIdOrData )
+ * @method static mixed failed()
+ * @method static mixed file( string $path, ?string $name = null )
+ * @method static mixed forceReply( array $options = [] )
+ * @method static mixed forwardMessage( $chatID, $from_chat_id, $message_id )
+ * @method static mixed forwardMessageRaw( $chatID, $from_chat_id = null, $message_id = null, $message_thread_id = null, $direct_messages_topic_id = null, $video_start_timestamp = null, $disable_notification = null, $protect_content = null, $message_effect_id = null, $suggested_post_parameters = null )
+ * @method static mixed forwardMessages( $chatID, $from_chat_id = null, $message_ids = null, $message_thread_id = null, $direct_messages_topic_id = null, $disable_notification = null, $protect_content = null )
+ * @method static mixed get( string $url, array|string|null $query = null )
+ * @method static mixed getAvailableGifts( array $data = [] )
+ * @method static mixed getBusinessAccountGifts( ...$args )
+ * @method static mixed getBusinessAccountStarBalance( ...$args )
+ * @method static mixed getBusinessConnection( ...$args )
+ * @method static mixed getChat( $chatIdOrData )
+ * @method static mixed getChatAdministrators( $chatIdOrData )
+ * @method static mixed getChatGifts( $chatIdOrData, $excludeUnlimited = null, $excludeLimitedUpgradable = null, $excludeLimitedNonUpgradable = null, $excludeUnique = null, $sortByPrice = null, $offset = null, $limit = null )
+ * @method static mixed getChatMember( $chatIdOrData, $userId = null )
+ * @method static mixed getChatMemberCount( $chatIdOrData )
+ * @method static mixed getChatMenuButton( array $data = [] )
+ * @method static mixed getCustomEmojiStickers( ...$args )
+ * @method static mixed getFile( $fileIdOrData = null )
+ * @method static mixed getForumTopicIconStickers( array $data = [] )
+ * @method static mixed getGameHighScores( ...$args )
+ * @method static mixed getHeader()
+ * @method static mixed getInput()
+ * @method static mixed getManagedBotAccessSettings( $userIdOrData )
+ * @method static mixed getManagedBotToken( $userIdOrData )
+ * @method static mixed getMe( array $data = [] )
+ * @method static mixed getMyCommands( $scopeOrData = null, $languageCode = null )
+ * @method static mixed getMyDefaultAdministratorRights( array $data = [] )
+ * @method static mixed getMyDescription( $languageCodeOrData = null )
+ * @method static mixed getMyName( $languageCodeOrData = null )
+ * @method static mixed getMyShortDescription( $languageCodeOrData = null )
+ * @method static mixed getMyStarBalance( array $data = [] )
+ * @method static mixed getRawData()
+ * @method static mixed getStarTransactions( array $data = [] )
+ * @method static mixed getStickerSet( ...$args )
+ * @method static mixed getUpdateType()
+ * @method static mixed getUpdates( $offsetOrData = null, $limit = null, $timeout = null, $allowedUpdates = null )
+ * @method static mixed getUserChatBoosts( $chatIdOrData, $userId = null )
+ * @method static mixed getUserGifts( $userIdOrData, $excludeUnlimited = null, $excludeLimitedUpgradable = null, $excludeLimitedNonUpgradable = null, $excludeUnique = null, $sortByPrice = null, $offset = null, $limit = null )
+ * @method static mixed getUserPersonalChatMessages( ...$args )
+ * @method static mixed getUserProfilePhotos( $userIdOrData = null, $offset = null, $limit = null )
+ * @method static mixed getWebhookInfo( array $data = [] )
+ * @method static mixed giftPremiumSubscription( ...$args )
+ * @method static mixed header( string $key )
+ * @method static mixed headers()
+ * @method static mixed hideGeneralForumTopic( $chatIdOrData )
+ * @method static mixed initialize()
+ * @method static mixed inline( $chatID, $second_OR_text, $message_id, $copy = false )
+ * @method static mixed json( ?string $key = null, mixed $default = null )
+ * @method static mixed jsonSerialize()
+ * @method static mixed keyboard( $chatID, $second_OR_text, $message_id, $copy = false, $resize = true, $one_time = false )
+ * @method static mixed leaveChat( $chatIdOrData )
+ * @method static mixed lg()
+ * @method static mixed log()
+ * @method static mixed logOut( array $data = [] )
+ * @method static mixed logPath( string $path = '' )
+ * @method static mixed object()
+ * @method static mixed patch( string $url, array $data = [] )
+ * @method static mixed path( string $name, string $path = '' )
+ * @method static mixed paths()
+ * @method static mixed pinChatMessage( $chatIdOrData, $messageId = null, $disableNotification = null, $businessConnectionId = null )
+ * @method static mixed post( string $url, array $data = [] )
+ * @method static mixed postStory( ...$args )
+ * @method static mixed promoteChatMember( $chatIdOrData, $userId = null, array $rights = [] )
+ * @method static mixed put( string $url, array $data = [] )
+ * @method static mixed readBusinessMessage( ...$args )
+ * @method static mixed refundStarPayment( ...$args )
+ * @method static mixed removeBusinessAccountProfilePhoto( ...$args )
+ * @method static mixed removeChatVerification( $chatIdOrData )
+ * @method static mixed removeKeyboard( array $options = [] )
+ * @method static mixed removeMyProfilePhoto( array $data = [] )
+ * @method static mixed removeUserVerification( $userIdOrData )
+ * @method static mixed reopenForumTopic( $chatIdOrData, $messageThreadId = null )
+ * @method static mixed reopenGeneralForumTopic( $chatIdOrData )
+ * @method static mixed replaceManagedBotToken( $userIdOrData )
+ * @method static mixed replaceStickerInSet( ...$args )
+ * @method static mixed repostStory( ...$args )
+ * @method static mixed request( string $method, array $data = [], string $httpMethod = 'POST' )
+ * @method static mixed restrictChatMember( $chatIdOrData, $userId = null, $permissions = null, $useIndependentChatPermissions = null, $untilDate = null )
+ * @method static mixed revokeChatInviteLink( $chatIdOrData, $inviteLink = null )
+ * @method static mixed routePath( string $path = '' )
+ * @method static mixed row( $buttons )
+ * @method static mixed savePreparedInlineMessage( ...$args )
+ * @method static mixed savePreparedKeyboardButton( ...$args )
+ * @method static mixed send( string $method, string $url, array $options = [] )
+ * @method static mixed sendAnimation( $chatIdOrData, $animation = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
+ * @method static mixed sendAudio( $chatIdOrData, $audio = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
+ * @method static mixed sendChatAction( $chatID, $action )
+ * @method static mixed sendChatActionRaw( $chatID, $action = null, $business_connection_id = null, $message_thread_id = null )
+ * @method static mixed sendChatJoinRequestWebApp( ...$args )
+ * @method static mixed sendChecklist( $business_connection_id, $chatID = null, $checklist = null, $disable_notification = null, $protect_content = null, $message_effect_id = null, $reply_parameters = null, $reply_markup = null )
+ * @method static mixed sendContact( $chatIdOrData, $phoneNumber = null, $firstName = null, $lastName = null, $vcard = null, array $options = [] )
+ * @method static mixed sendDice( $chatID, $emoji = null, $business_connection_id = null, $message_thread_id = null, $direct_messages_topic_id = null, $disable_notification = null, $protect_content = null, $allow_paid_broadcast = null, $message_effect_id = null, $suggested_post_parameters = null, $reply_parameters = null, $reply_markup = null )
+ * @method static mixed sendDocument( $chatIdOrData, $document = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
+ * @method static mixed sendGame( ...$args )
+ * @method static mixed sendGift( $userIdOrData = null, $chatId = null, $giftId = null, $payForUpgrade = null, $text = null, $textParseMode = null, $textEntities = null )
+ * @method static mixed sendInvoice( $chatIdOrData, $title = null, $description = null, $payload = null, $currency = null, $prices = null, $providerToken = null, array $options = [] )
+ * @method static mixed sendLivePhoto( ...$args )
+ * @method static mixed sendLocation( $chatIdOrData, $latitude = null, $longitude = null, array $options = [] )
+ * @method static mixed sendMediaGroup( $chatIdOrData, $media = null, array $extra = [] )
+ * @method static mixed sendMessage( $chatID, $text, $reply_to_message_id = null, $reply_markup = null )
+ * @method static mixed sendMessageDraft( ...$args )
+ * @method static mixed sendMessageRaw( $chatID, $text = null, $business_connection_id = null, $message_thread_id = null, $direct_messages_topic_id = null, $ephemeral_message_parameters = null, $parse_mode = null, $entities = null, $link_preview_options = null, $disable_notification = null, $protect_content = null, $allow_paid_broadcast = null, $message_effect_id = null, $suggested_post_parameters = null, $reply_parameters = null, $reply_markup = null )
+ * @method static mixed sendPaidMedia( ...$args )
+ * @method static mixed sendPhoto( $chatID, $caption = null, $photo = null, $reply_to_message_id = null, $reply_markup = null )
+ * @method static mixed sendPhotoRaw( ...$args )
+ * @method static mixed sendPoll( $chatIdOrData, $question = null, $options = null, array $extra = [] )
+ * @method static mixed sendRichMessage( ...$args )
+ * @method static mixed sendRichMessageDraft( ...$args )
+ * @method static mixed sendSticker( $chatIdOrData, $sticker = null, $emoji = null, array $extra = [] )
+ * @method static mixed sendVenue( $chatIdOrData, $latitude = null, $longitude = null, $title = null, $address = null, array $options = [] )
+ * @method static mixed sendVideo( $chatIdOrData, $video = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
+ * @method static mixed sendVideoNote( $chatIdOrData, $videoNote = null, $replyMarkup = null, array $extra = [] )
+ * @method static mixed sendVoice( $chatIdOrData, $voice = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
+ * @method static mixed serverError()
+ * @method static mixed setBasePath( string $path )
+ * @method static mixed setBusinessAccountBio( ...$args )
+ * @method static mixed setBusinessAccountGiftSettings( ...$args )
+ * @method static mixed setBusinessAccountName( ...$args )
+ * @method static mixed setBusinessAccountProfilePhoto( ...$args )
+ * @method static mixed setBusinessAccountUsername( ...$args )
+ * @method static mixed setChatAdministratorCustomTitle( $chatIdOrData, $userId = null, $customTitle = null )
+ * @method static mixed setChatDescription( $chatIdOrData, $description = null )
+ * @method static mixed setChatMemberTag( $chatIdOrData, $userId = null, $tag = null )
+ * @method static mixed setChatMenuButton( array $data = [] )
+ * @method static mixed setChatPermissions( $chatIdOrData, $permissions = null, $useIndependentChatPermissions = null )
+ * @method static mixed setChatPhoto( $chatIdOrData, $photo = null )
+ * @method static mixed setChatStickerSet( $chatIdOrData, $stickerSetName = null )
+ * @method static mixed setChatTitle( $chatIdOrData, $title = null )
+ * @method static mixed setCustomEmojiStickerSetThumbnail( ...$args )
+ * @method static mixed setGameScore( ...$args )
+ * @method static mixed setManagedBotAccessSettings( $userIdOrData, $isAccessRestricted = null, $addedUserIds = null )
+ * @method static mixed setMessageReaction( $chatID, $message_id = null, $reaction = null, $is_big = null )
+ * @method static mixed setMyCommands( $commandsOrData, $scope = null, $languageCode = null )
+ * @method static mixed setMyDefaultAdministratorRights( array $data = [] )
+ * @method static mixed setMyDescription( $descriptionOrData = null, $languageCode = null )
+ * @method static mixed setMyName( $nameOrData = null, $languageCode = null )
+ * @method static mixed setMyProfilePhoto( ...$args )
+ * @method static mixed setMyShortDescription( $shortDescriptionOrData = null, $languageCode = null )
+ * @method static mixed setPassportDataErrors( ...$args )
+ * @method static mixed setPath( string $name, string $path )
+ * @method static mixed setStickerEmojiList( ...$args )
+ * @method static mixed setStickerKeywords( ...$args )
+ * @method static mixed setStickerMaskPosition( ...$args )
+ * @method static mixed setStickerPositionInSet( ...$args )
+ * @method static mixed setStickerSetThumbnail( ...$args )
+ * @method static mixed setStickerSetTitle( ...$args )
+ * @method static mixed setWebhook( $urlOrData = null, $certificate = null, $ipAddress = null, $maxConnections = null, $allowedUpdates = null, $dropPendingUpdates = null, $secretToken = null )
+ * @method static mixed shutdownHandler()
+ * @method static mixed state( $stateName )
+ * @method static mixed status()
+ * @method static mixed stopMessageLiveLocation( ...$args )
+ * @method static mixed stopPoll( $chatIdOrData, $messageId = null, $replyMarkup = null, $businessConnectionId = null )
+ * @method static mixed storagePath( string $path = '' )
+ * @method static mixed successful()
+ * @method static mixed throw()
+ * @method static mixed transferBusinessAccountStars( ...$args )
+ * @method static mixed transferGift( ...$args )
+ * @method static mixed unbanChatMember( $chatIdOrData, $userId = null, $onlyIfBanned = null )
+ * @method static mixed unbanChatSenderChat( $chatIdOrData, $senderChatId = null )
+ * @method static mixed unhideGeneralForumTopic( $chatIdOrData )
+ * @method static mixed unpinAllChatMessages( $chatIdOrData )
+ * @method static mixed unpinAllForumTopicMessages( $chatIdOrData, $messageThreadId = null )
+ * @method static mixed unpinAllGeneralForumTopicMessages( $chatIdOrData )
+ * @method static mixed unpinChatMessage( $chatIdOrData, $messageId = null, $businessConnectionId = null )
+ * @method static mixed upgradeGift( ...$args )
+ * @method static mixed uploadStickerFile( ...$args )
+ * @method static mixed verifyChat( $chatIdOrData, $customDescription = null )
+ * @method static mixed verifyUser( $userIdOrData, $customDescription = null )
+ * @mixin BotManager
+ */
+class bot extends Facade {
+    protected static function getFacadeAccessor() {
+        return BotManager::class;
     }
 }

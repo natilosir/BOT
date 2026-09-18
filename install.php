@@ -1,129 +1,155 @@
 <?php
 
-// ===========================
-// 1. بررسی وجود فایل کانفیگ (یک‌بار اجرا)
-// ===========================
 $configFile = __DIR__ . '/../../../config.php';
-if (file_exists($configFile)) {
+
+if ( file_exists($configFile) ) {
     echo "✅ پیکربندی قبلاً انجام شده است. برای تغییر مجدد، فایل config.php را حذف کنید.\n";
     exit(0);
 }
 
-// ===========================
-// 2. انتقال فایل‌ها (بخش قبلی)
-// ===========================
-$sourceDir      = __DIR__.'/../telegram-bot-sdk/';
-$destinationDir = __DIR__.'/../../../';
+$sourceDir      = __DIR__ . '/../telegram-bot-sdk/';
+$destinationDir = __DIR__ . '/../../../';
 
-if (is_dir($sourceDir)) {
+if ( is_dir($sourceDir) ) {
     $files = scandir($sourceDir);
 
-    foreach ($files as $file) {
-        if ($file !== '.' && $file !== '..') {
-            $sourceFile      = $sourceDir.$file;
-            $destinationFile = $destinationDir.$file;
-
-            if (is_dir($sourceFile)) {
-                rename($sourceFile, $destinationFile);
-            } else {
-                rename($sourceFile, $destinationFile);
-            }
+    foreach ( $files as $file ) {
+        if ( $file === '.' || $file === '..' ) {
+            continue;
         }
+
+        rename($sourceDir . $file, $destinationDir . $file);
     }
 
     rmdir($sourceDir);
 }
 
-// ===========================
-// 3. گرفتن اطلاعات (تنها در صورتی که پوشه منبع وجود نداشته باشد)
-// ===========================
-if (! is_dir($sourceDir)) {
-    // تابع ورودی با پشتیبانی از readline
-    function prompt($message)
-    {
+if ( !is_dir($sourceDir) ) {
+    function prompt( string $message ): string {
         echo $message . ': ';
         $handle = fopen('php://stdin', 'r');
-        $input = fgets($handle);
+        $input  = fgets($handle);
         fclose($handle);
-        return trim($input);
+
+        return trim((string) $input);
     }
 
-    // ANSI color codes
+    function promptDefault( string $message, string $default, string $yellow, string $green, string $reset ): string {
+        $value = prompt($green . $message . $reset . ' [if empty: ' . $yellow . $default . $reset . ']');
+
+        return $value === '' ? $default : $value;
+    }
+
     $yellow = "\033[33m";
     $green  = "\033[32m";
     $reset  = "\033[0m";
 
-    // دریافت اطلاعات
-    $botToken = prompt($green.'Please enter your bot token API'.$reset);
-    $dbHost   = prompt($green.'Please enter your database host'.$reset.' [if empty: '.$yellow.'localhost'.$reset.']');
-    if (empty($dbHost)) {
-        $dbHost = 'localhost';
+    $botToken = prompt($green . 'Please enter your bot token API' . $reset);
+
+    $dbHost = promptDefault('Please enter your database host', 'localhost', $yellow, $green, $reset);
+
+    $dbUser = promptDefault('Please enter your database username', 'root', $yellow, $green, $reset);
+
+    $dbName = promptDefault('Please enter your database name', 'natilos', $yellow, $green, $reset);
+
+    $dbDriver = prompt($green . 'Please enter database driver' . $reset . ' [if empty: ' . $yellow . 'mysql' . $reset . ']');
+
+    $dbPort = prompt($green . 'Please enter database port' . $reset . ' [if empty: ' . $yellow . '3306' . $reset . ']');
+
+    $dbPassword = prompt($green . 'Please enter database password' . $reset . ' [if empty: ' . $yellow . "''" . $reset . ']');
+
+    $dbCharset = prompt($green . 'Please enter database charset' . $reset . ' [if empty: ' . $yellow . 'utf8mb4' . $reset . ']');
+
+    $dbCollation = prompt($green . 'Please enter database collation' . $reset . ' [if empty: ' . $yellow . 'utf8mb4_unicode_ci' . $reset . ']');
+
+    $dbPrefix = prompt($green . 'Please enter database prefix' . $reset . ' [if empty: ' . $yellow . "''" . $reset . ']');
+
+    $dbStrict = prompt($green . 'Please enter database strict mode (true/false)' . $reset . ' [if empty: ' . $yellow . 'true' . $reset . ']');
+
+    $databaseLines = [];
+
+    $databaseLines[] = "        'host'     => " . var_export($dbHost, true) . ",";
+    $databaseLines[] = "        'user'     => " . var_export($dbUser, true) . ",";
+    $databaseLines[] = "        'database' => " . var_export($dbName, true) . ",";
+
+    if ( $dbDriver !== '' ) {
+        $databaseLines[] = "        'driver'    => " . var_export($dbDriver, true) . ",";
     }
 
-    $dbUser = prompt($green.'Please enter your database username'.$reset.' [if empty: '.$yellow.'root'.$reset.']');
-    if (empty($dbUser)) {
-        $dbUser = 'root';
+    if ( $dbPort !== '' ) {
+        if ( !ctype_digit($dbPort) ) {
+            fwrite(STDERR, "\n❌ Invalid database port.\n");
+            exit(1);
+        }
+
+        $databaseLines[] = "        'port'      => " . (int) $dbPort . ",";
     }
 
-    $dbPassword = prompt($green.'Please enter your database password'.$reset);
-    $dbName     = prompt($green.'Please enter your database name'.$reset);
+    if ( $dbPassword !== '' ) {
+        $databaseLines[] = "        'password'  => " . var_export($dbPassword, true) . ",";
+    }
 
-    // ساخت محتوای config.php
+    if ( $dbCharset !== '' ) {
+        $databaseLines[] = "        'charset'   => " . var_export($dbCharset, true) . ",";
+    }
+
+    if ( $dbCollation !== '' ) {
+        $databaseLines[] = "        'collation' => " . var_export($dbCollation, true) . ",";
+    }
+
+    if ( $dbPrefix !== '' ) {
+        $databaseLines[] = "        'prefix'    => " . var_export($dbPrefix, true) . ",";
+    }
+
+    if ( $dbStrict !== '' ) {
+        $strict = strtolower($dbStrict);
+
+        if ( !in_array($strict, [ 'true', 'false', '1', '0' ], true) ) {
+            fwrite(STDERR, "\n❌ Strict mode must be true or false.\n");
+            exit(1);
+        }
+
+        $databaseLines[] = "        'strict'    => " . ( in_array($strict, [
+                'true',
+                '1',
+            ], true) ? 'true' : 'false' ) . ",";
+    }
+
+    $databaseConfig = implode("\n", $databaseLines);
+
     $configContent = <<<'EOD'
-<?php
+        <?php
+        
+        return [
+            'timezone' => 'Asia/Tehran',
+            'locale'   => 'fa',
+            'calendar' => 'jalali',
+        
+            'bot' => [
+                'token' => %BOT_TOKEN%,
+            ],
+        
+            'database' => [
+        %DATABASE_CONFIG%
+            ],
+        ];
+        EOD;
 
-return [
+    $configContent = str_replace([
+        '%BOT_TOKEN%',
+        '%DATABASE_CONFIG%',
+    ], [
+        var_export($botToken, true),
+        $databaseConfig,
+    ], $configContent);
 
-/*
-|--------------------------------------------------------------------------
-| Bot Configuration
-|--------------------------------------------------------------------------
-|
-| This section contains the configuration for the bot.
-| You need to provide the token to connect to the bot API.
-|
-*/
-
-'bot' => [
-    'token' => '%BOT_TOKEN%', 
-],
-
-/*
-|--------------------------------------------------------------------------
-| Database Configuration
-|--------------------------------------------------------------------------
-|
-| This section contains the configuration for the database connection.
-| You need to provide the host, username, password, and database name
-| to connect to your database.
-|
-*/
-
-'database' => [
-    'host' => '%DB_HOST%',
-    'user' => '%DB_USER%',
-    'password' => '%DB_PASSWORD%',
-    'database' => '%DB_NAME%',
-],
-
-];
-EOD;
-
-    $replacements = [
-        '%BOT_TOKEN%'   => $botToken,
-        '%DB_HOST%'     => $dbHost,
-        '%DB_USER%'     => $dbUser,
-        '%DB_PASSWORD%' => $dbPassword,
-        '%DB_NAME%'     => $dbName,
-    ];
-
-    foreach ($replacements as $placeholder => $value) {
-        $configContent = str_replace($placeholder, $value, $configContent);
+    if ( file_put_contents($configFile, $configContent) === false ) {
+        fwrite(STDERR, "\n❌ Could not create config.php.\n");
+        exit(1);
     }
-
-    file_put_contents($configFile, $configContent);
 
     echo "\n✅ The application is ready to run. Please read the documentation.\n";
-} else {
-    echo 'ERROR: Source directory not found.'."\n";
+}
+else {
+    echo "ERROR: Source directory not found.\n";
 }

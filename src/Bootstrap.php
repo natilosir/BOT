@@ -4,15 +4,19 @@ namespace natilosir\bot;
 
 use DateTimeZone;
 use Illuminate\Container\Container;
-use Illuminate\Support\Arr;
+use Illuminate\Http\Client\Factory;
+use natilosir\bot\bot\BotManager;
+use natilosir\bot\bot\TelegramClient;
 use natilosir\bot\log\AdvancedLogger;
 use natilosir\Verta\Verta;
 use RuntimeException;
+use Throwable;
 
 class Bootstrap extends Container {
 
     public function __construct( array $paths = [] ) {
         Container::setInstance($this);
+        Facade::setFacadeApplication($this);
         $this->resolvePaths($paths);
         $this->registerBaseBindings();
         $this->loadConfig();
@@ -116,6 +120,20 @@ class Bootstrap extends Container {
         return $this->paths;
     }
 
+    protected function dotArray( array $array, string $prepend = '' ): array {
+        $result = [];
+        foreach ( $array as $key => $value ) {
+            $newKey = $prepend === '' ? $key : $prepend . '.' . $key;
+            if ( is_array($value) ) {
+                $result += $this->dotArray($value, $newKey);
+            }
+            else {
+                $result[$newKey] = $value;
+            }
+        }
+        return $result;
+    }
+
     protected function registerBaseBindings(): void {
         $this->instance('app', $this);
         $this->instance('bootstrap', $this);
@@ -166,18 +184,18 @@ class Bootstrap extends Container {
                     if ( !empty($this->config['timezone']) ) {
                         Verta::setTimezone(new DateTimeZone($this->config['timezone']));
                     }
-                } catch ( \Throwable $e ) {
+                } catch ( Throwable $e ) {
                     dd($e);
                 }
                 try {
                     if ( !empty($this->config['locale']) ) {
                         Verta::setLocale($this->config['locale']);
                     }
-                } catch ( \Throwable $e ) {
+                } catch ( Throwable $e ) {
                     dd($e);
                 }
             }
-        } catch ( \Throwable $e ) {
+        } catch ( Throwable $e ) {
             dd($e);
         }
     }
@@ -187,7 +205,7 @@ class Bootstrap extends Container {
             return $this->config;
         }
 
-        $this->dotConfig ??= Arr::dot($this->config);
+        $this->dotConfig ??= $this->dotArray($this->config);
 
         if ( array_key_exists($key, $this->dotConfig) ) {
             return $this->dotConfig[$key];
@@ -221,6 +239,8 @@ class Bootstrap extends Container {
     }
 
     protected function loadClasses(): void {
+        $this->registerBotBindings();
+
         foreach ( $this->classes as $class ) {
             if ( !class_exists($class) ) {
                 throw new RuntimeException("کلاس مورد نیاز پیدا نشد: {$class}");
@@ -234,6 +254,20 @@ class Bootstrap extends Container {
 
             $this->singleton($class, fn() => new $class());
             $this->make($class);
+        }
+    }
+
+    protected function registerBotBindings(): void {
+        if ( class_exists(TelegramClient::class) ) {
+            $this->singleton(TelegramClient::class, function () {
+                return new TelegramClient(app(Factory::class));
+            });
+        }
+
+        if ( class_exists(BotManager::class) ) {
+            $this->singleton(BotManager::class, function () {
+                return new BotManager($this->make(TelegramClient::class));
+            });
         }
     }
 

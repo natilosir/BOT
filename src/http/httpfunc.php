@@ -3,11 +3,24 @@
 use Illuminate\Http\Client\ConnectionException;
 use natilosir\bot\Http;
 
-$BOT_TOKEN = paths()->config('bot.token');
-defined('api') || define('api', 'https://api.telegram.org/bot' . $BOT_TOKEN . '/');
-
+/**
+ * Resolve Telegram configuration lazily.
+ *
+ * helpers.php is loaded by Composer very early. Reading paths()->config()
+ * while Composer is still bootstrapping can happen before Bootstrap is ready,
+ * so the token is resolved only when the first Telegram request is made.
+ */
 function http( $uri, $data = [], $method = 'POST' ) {
-    global $BOT_TOKEN;
+    static $botToken = null;
+
+    if ( $botToken === null ) {
+        $botToken             = paths()->config('bot.token');
+        $GLOBALS['BOT_TOKEN'] = $botToken;
+
+        if ( !defined('api') ) {
+            define('api', 'https://api.telegram.org/bot' . $botToken . '/');
+        }
+    }
 
     $method = strtoupper($method);
     $url    = str_starts_with($uri, 'http://') || str_starts_with($uri, 'https://') ? $uri : api . ltrim($uri, '/');
@@ -33,12 +46,12 @@ function http( $uri, $data = [], $method = 'POST' ) {
 
         return $response->json() ?? [];
     } catch ( ConnectionException $e ) {
-        $msg = str_replace($BOT_TOKEN, '{BOT_TOKEN}', $e->getMessage());
+        $msg = str_replace($botToken, '{BOT_TOKEN}', $e->getMessage());
         $msg = preg_replace('/bot\d+:[A-Za-z0-9_-]+/', 'bot{TOKEN}', $msg);
         throw new ConnectionException($msg);
-    } catch ( \Throwable $e ) {
-        $msg = str_replace($BOT_TOKEN, '{BOT_TOKEN}', $e->getMessage());
+    } catch ( Throwable $e ) {
+        $msg = str_replace($botToken, '{BOT_TOKEN}', $e->getMessage());
         $msg = preg_replace('/bot\d+:[A-Za-z0-9_-]+/', 'bot{TOKEN}', $msg);
-        throw new \RuntimeException($msg, (int) $e->getCode());
+        throw new RuntimeException($msg, (int) $e->getCode());
     }
 }

@@ -681,7 +681,7 @@ class AdvancedLogger {
         $html = "<div class='log-entry' data-level='{$l}'>" . "<button class='copy-btn' title='Copy entry'>📋</button>" . "<div class='entry-head'>" . "<div class='entry-left'>" . "<span class='lvl'>{$safeLevel}</span>" . "<span class='msg'>{$safeMessage}</span>" . "</div>" . "<div class='entry-right'>" . "<div class='meta'>" . "<span class='mi file-mi copy-path' data-path='{$dataPath}' title='Click to copy path'>📄 {$safeFile}:{$safeLine}</span>" . "<span class='mi'>🕐 {$date}</span>" . "</div>" . "<span class='chev'>▶</span>" . "</div>" . "</div>" . "<div class='entry-body'>" . "<div class='data'>{$content}</div>" . "{$traceHTML}" . "</div>" . "</div>";
 
         $safe  = json_encode($html, JSON_UNESCAPED_UNICODE);
-        $entry = "<script>updateLog({$safe});</script>\n";
+        $entry = "<script>updateLog({$safe})</script>\n";
         file_put_contents($this->logFilePath, $entry, FILE_APPEND | LOCK_EX);
     }
 
