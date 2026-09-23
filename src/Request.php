@@ -2,18 +2,24 @@
 
 namespace natilosir\bot;
 
-use AllowDynamicProperties;
+use natilosir\bot\Bot\DriverManager;
 
-#[AllowDynamicProperties]
+#[\AllowDynamicProperties]
 class Request {
 
-    public function __construct() {
+    private ?DriverManager $driverManager = null;
+
+    public function __construct( ?DriverManager $driverManager = null ) {
+        $this->driverManager = $driverManager;
         $this->parseInput();
+        $this->resolveDriverContext();
         $this->parseRequest();
     }
 
     public $updateId;
     public $request;
+    public $driverName;
+    public $platform;
 
     // COMMON FIELDS
     public $updateType;
@@ -84,16 +90,29 @@ class Request {
         'edited_message',
         'channel_post',
         'edited_channel_post',
+        'business_connection',
+        'business_message',
+        'edited_business_message',
+        'deleted_business_messages',
+        'guest_message',
+        'message_reaction',
+        'message_reaction_count',
         'inline_query',
         'chosen_inline_result',
         'callback_query',
         'shipping_query',
         'pre_checkout_query',
+        'purchased_paid_media',
         'poll',
         'poll_answer',
         'my_chat_member',
         'chat_member',
         'chat_join_request',
+        'chat_boost',
+        'removed_chat_boost',
+        'managed_bot',
+        'subscription',
+        'stopped_message_generation',
     ];
     private $dynamicData = [];
 
@@ -158,9 +177,52 @@ class Request {
         return $result;
     }
 
+    private function resolveDriverContext(): void {
+        if ( !array_key_exists('update_id', $this->data) ) {
+            return;
+        }
+
+        $manager = $this->driverManager;
+
+        if ( $manager === null ) {
+            try {
+                $manager = app(DriverManager::class);
+            } catch ( \Throwable ) {
+                // Request parsing must remain usable before the application
+                // container has been bootstrapped.
+                return;
+            }
+        }
+
+        // A bot update received over HTTP must resolve deterministically when
+        // more than one driver is configured. Falling back to bot.default here
+        // could make the application answer with the wrong platform token.
+        $webhookRequest = \natilosir\bot\Bot\Webhook\WebhookRequest::capture();
+        $detected       = $manager->detectWebhook($webhookRequest);
+
+        if ( $detected !== null ) {
+            $manager->use($detected);
+            $this->driverName = $detected;
+            $this->platform   = $detected;
+            return;
+        }
+
+        if ( $webhookRequest->isPost() && count($manager->configuredDriverNames()) > 1 ) {
+            throw new \RuntimeException('Unable to identify the webhook source. No configured bot driver matched this POST update.');
+        }
+
+        // Single-driver installations keep backward compatibility.
+        $this->driverName = $manager->current();
+        $this->platform   = $this->driverName;
+    }
+
+    public function getDriverName(): string {
+        return (string) ( $this->driverName ?? '' );
+    }
+
     private function parseRequest() {
-        if ( !empty($this->data['update_id']) ) {
-            return $this->parseTelegram();
+        if ( array_key_exists('update_id', $this->data) ) {
+            return $this->parseBotUpdate();
         }
 
         if ( !empty($this->data['route']) ) {
@@ -168,7 +230,7 @@ class Request {
         }
     }
 
-    private function parseTelegram() {
+    private function parseBotUpdate() {
         $this->updateId = $this->data['update_id'] ?? null;
 
         foreach ( $this->updateTypes as $type ) {
@@ -176,8 +238,23 @@ class Request {
                 $this->updateType = $type;
                 $method           = 'parse' . str_replace('_', '', ucwords($type, '_'));
 
+                $payload       = $this->data[$type];
+                $this->request = is_array($payload) ? (object) $payload : $payload;
+
                 if ( method_exists($this, $method) ) {
-                    $this->$method($this->data[$type]);
+                    $this->$method($payload);
+                }
+                elseif ( in_array($type, [ 'business_message', 'edited_business_message', 'guest_message' ], true)
+                         && is_array($payload)
+                         && method_exists($this, 'parseMessage') ) {
+                    $this->parseMessage($payload);
+                }
+                elseif ( is_array($payload) ) {
+                    foreach ( $payload as $key => $value ) {
+                        if ( !property_exists($this, (string) $key) ) {
+                            $this->{(string) $key} = $value;
+                        }
+                    }
                 }
                 break;
             }

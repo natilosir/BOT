@@ -2,9 +2,9 @@
 
 namespace natilosir\bot;
 
-use natilosir\bot\bot\BotManager;
-
 /**
+ * @method static \natilosir\bot\Bot\Manager\PendingCall api( string $method, array $data = [], string $httpMethod = 'POST' )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall request( string $method, array $data = [], string $httpMethod = 'POST' )
  * @method static mixed addStickerToSet( ...$args )
  * @method static mixed alert( $query_id, $text, $show_alert = false )
  * @method static mixed all()
@@ -15,7 +15,13 @@ use natilosir\bot\bot\BotManager;
  * @method static mixed answerPreCheckoutQuery( $preCheckoutQueryIdOrData, $ok = null, $errorMessage = null )
  * @method static mixed answerShippingQuery( $shippingQueryIdOrData, $ok = null, $shippingOptions = null, $errorMessage = null )
  * @method static mixed answerWebAppQuery( $webAppQueryIdOrData, $result = null )
- * @method static mixed api( string $method, array $data = [], string $httpMethod = 'POST' )
+ * @method static bool supports( string $method )
+ * @method static \natilosir\bot\Bot\TelegramClient TelegramClient()
+ * @method static \natilosir\bot\Bot\BaleClient BaleClient()
+ * @method static mixed businessApi( string $method, array $data = [], string $httpMethod = 'POST' )
+ * @method static mixed askReview( $userIdOrData, $delaySeconds = null )
+ * @method static mixed inquireTransaction( $transactionIdOrData )
+ * @method static mixed getChatMembersCount( $chatIdOrData )
  * @method static mixed appPath( string $path = '' )
  * @method static mixed approveChatJoinRequest( $chatIdOrData, $userId = null )
  * @method static mixed approveSuggestedPost( $chatIdOrData, $messageId = null, $sendDate = null )
@@ -123,6 +129,7 @@ use natilosir\bot\bot\BotManager;
  * @method static mixed getUserGifts( $userIdOrData, $excludeUnlimited = null, $excludeLimitedUpgradable = null, $excludeLimitedNonUpgradable = null, $excludeUnique = null, $sortByPrice = null, $offset = null, $limit = null )
  * @method static mixed getUserPersonalChatMessages( ...$args )
  * @method static mixed getUserProfilePhotos( $userIdOrData = null, $offset = null, $limit = null )
+ * @method static mixed getUserProfileAudios( $userIdOrData = null, $offset = null, $limit = null )
  * @method static mixed getWebhookInfo( array $data = [] )
  * @method static mixed giftPremiumSubscription( ...$args )
  * @method static mixed header( string $key )
@@ -159,7 +166,6 @@ use natilosir\bot\bot\BotManager;
  * @method static mixed replaceManagedBotToken( $userIdOrData )
  * @method static mixed replaceStickerInSet( ...$args )
  * @method static mixed repostStory( ...$args )
- * @method static mixed request( string $method, array $data = [], string $httpMethod = 'POST' )
  * @method static mixed restrictChatMember( $chatIdOrData, $userId = null, $permissions = null, $useIndependentChatPermissions = null, $untilDate = null )
  * @method static mixed revokeChatInviteLink( $chatIdOrData, $inviteLink = null )
  * @method static mixed routePath( string $path = '' )
@@ -167,35 +173,35 @@ use natilosir\bot\bot\BotManager;
  * @method static mixed savePreparedInlineMessage( ...$args )
  * @method static mixed savePreparedKeyboardButton( ...$args )
  * @method static mixed send( string $method, string $url, array $options = [] )
- * @method static mixed sendAnimation( $chatIdOrData, $animation = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
- * @method static mixed sendAudio( $chatIdOrData, $audio = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
- * @method static mixed sendChatAction( $chatID, $action )
- * @method static mixed sendChatActionRaw( $chatID, $action = null, $business_connection_id = null, $message_thread_id = null )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall sendAnimation( $chatIdOrData, $animation = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall sendAudio( $chatIdOrData, $audio = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall sendChatAction( $chatID, $action )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall sendChatActionRaw( $chatID, $action = null, $business_connection_id = null, $message_thread_id = null )
  * @method static mixed sendChatJoinRequestWebApp( ...$args )
  * @method static mixed sendChecklist( $business_connection_id, $chatID = null, $checklist = null, $disable_notification = null, $protect_content = null, $message_effect_id = null, $reply_parameters = null, $reply_markup = null )
  * @method static mixed sendContact( $chatIdOrData, $phoneNumber = null, $firstName = null, $lastName = null, $vcard = null, array $options = [] )
  * @method static mixed sendDice( $chatID, $emoji = null, $business_connection_id = null, $message_thread_id = null, $direct_messages_topic_id = null, $disable_notification = null, $protect_content = null, $allow_paid_broadcast = null, $message_effect_id = null, $suggested_post_parameters = null, $reply_parameters = null, $reply_markup = null )
- * @method static mixed sendDocument( $chatIdOrData, $document = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall sendDocument( $chatIdOrData, $document = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
  * @method static mixed sendGame( ...$args )
  * @method static mixed sendGift( $userIdOrData = null, $chatId = null, $giftId = null, $payForUpgrade = null, $text = null, $textParseMode = null, $textEntities = null )
  * @method static mixed sendInvoice( $chatIdOrData, $title = null, $description = null, $payload = null, $currency = null, $prices = null, $providerToken = null, array $options = [] )
  * @method static mixed sendLivePhoto( ...$args )
  * @method static mixed sendLocation( $chatIdOrData, $latitude = null, $longitude = null, array $options = [] )
  * @method static mixed sendMediaGroup( $chatIdOrData, $media = null, array $extra = [] )
- * @method static mixed sendMessage( $chatID, $text, $reply_to_message_id = null, $reply_markup = null )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall sendMessage( $chatID, $text, $reply_to_message_id = null, $reply_markup = null )
  * @method static mixed sendMessageDraft( ...$args )
- * @method static mixed sendMessageRaw( $chatID, $text = null, $business_connection_id = null, $message_thread_id = null, $direct_messages_topic_id = null, $ephemeral_message_parameters = null, $parse_mode = null, $entities = null, $link_preview_options = null, $disable_notification = null, $protect_content = null, $allow_paid_broadcast = null, $message_effect_id = null, $suggested_post_parameters = null, $reply_parameters = null, $reply_markup = null )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall sendMessageRaw( $chatID, $text = null, $business_connection_id = null, $message_thread_id = null, $direct_messages_topic_id = null, $ephemeral_message_parameters = null, $parse_mode = null, $entities = null, $link_preview_options = null, $disable_notification = null, $protect_content = null, $allow_paid_broadcast = null, $message_effect_id = null, $suggested_post_parameters = null, $reply_parameters = null, $reply_markup = null )
  * @method static mixed sendPaidMedia( ...$args )
- * @method static mixed sendPhoto( $chatID, $caption = null, $photo = null, $reply_to_message_id = null, $reply_markup = null )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall sendPhoto( $chatID, $caption = null, $photo = null, $reply_to_message_id = null, $reply_markup = null )
  * @method static mixed sendPhotoRaw( ...$args )
  * @method static mixed sendPoll( $chatIdOrData, $question = null, $options = null, array $extra = [] )
  * @method static mixed sendRichMessage( ...$args )
  * @method static mixed sendRichMessageDraft( ...$args )
  * @method static mixed sendSticker( $chatIdOrData, $sticker = null, $emoji = null, array $extra = [] )
  * @method static mixed sendVenue( $chatIdOrData, $latitude = null, $longitude = null, $title = null, $address = null, array $options = [] )
- * @method static mixed sendVideo( $chatIdOrData, $video = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall sendVideo( $chatIdOrData, $video = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
  * @method static mixed sendVideoNote( $chatIdOrData, $videoNote = null, $replyMarkup = null, array $extra = [] )
- * @method static mixed sendVoice( $chatIdOrData, $voice = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
+ * @method static \natilosir\bot\Bot\Manager\PendingCall sendVoice( $chatIdOrData, $voice = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] )
  * @method static mixed serverError()
  * @method static mixed setBasePath( string $path )
  * @method static mixed setBusinessAccountBio( ...$args )
@@ -229,6 +235,7 @@ use natilosir\bot\bot\BotManager;
  * @method static mixed setStickerPositionInSet( ...$args )
  * @method static mixed setStickerSetThumbnail( ...$args )
  * @method static mixed setStickerSetTitle( ...$args )
+ * @method static mixed setUserEmojiStatus( $userIdOrData, $emojiStatusCustomEmojiId = null, $emojiStatusExpirationDate = null )
  * @method static mixed setWebhook( $urlOrData = null, $certificate = null, $ipAddress = null, $maxConnections = null, $allowedUpdates = null, $dropPendingUpdates = null, $secretToken = null )
  * @method static mixed shutdownHandler()
  * @method static mixed state( $stateName )
@@ -251,10 +258,48 @@ use natilosir\bot\bot\BotManager;
  * @method static mixed uploadStickerFile( ...$args )
  * @method static mixed verifyChat( $chatIdOrData, $customDescription = null )
  * @method static mixed verifyUser( $userIdOrData, $customDescription = null )
- * @mixin BotManager
+ * @mixin \natilosir\bot\Bot\Drivers\Telegram\TelegramDriver
+ * @mixin \natilosir\bot\Bot\Drivers\Bale\BaleDriver
+ * @mixin \natilosir\bot\Bot\Manager\BotManager
  */
 class bot extends Facade {
     protected static function getFacadeAccessor() {
-        return BotManager::class;
+        return \natilosir\bot\Bot\Manager\BotManager::class;
+    }
+
+    public static function telegram(): \natilosir\bot\Bot\Drivers\Telegram\TelegramDriver {
+        /** @var \natilosir\bot\Bot\Manager\BotManager $manager */
+        $manager = static::resolveFacadeRoot();
+        return $manager->telegram();
+    }
+
+    public static function bale(): \natilosir\bot\Bot\Drivers\Bale\BaleDriver {
+        /** @var \natilosir\bot\Bot\Manager\BotManager $manager */
+        $manager = static::resolveFacadeRoot();
+        return $manager->bale();
+    }
+
+    public static function driver( ?string $name = null ): \natilosir\bot\Bot\Contracts\BotDriver {
+        /** @var \natilosir\bot\Bot\Manager\BotManager $manager */
+        $manager = static::resolveFacadeRoot();
+        return $manager->driver($name);
+    }
+
+    public static function currentDriver(): \natilosir\bot\Bot\Contracts\BotDriver {
+        /** @var \natilosir\bot\Bot\Manager\BotManager $manager */
+        $manager = static::resolveFacadeRoot();
+        return $manager->currentDriver();
+    }
+
+    public static function useDriver( string $name ): \natilosir\bot\Bot\Manager\BotManager {
+        /** @var \natilosir\bot\Bot\Manager\BotManager $manager */
+        $manager = static::resolveFacadeRoot();
+        return $manager->useDriver($name);
+    }
+
+    public static function driverName(): string {
+        /** @var \natilosir\bot\Bot\Manager\BotManager $manager */
+        $manager = static::resolveFacadeRoot();
+        return $manager->driverName();
     }
 }

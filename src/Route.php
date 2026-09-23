@@ -2,14 +2,13 @@
 
 namespace natilosir\bot;
 
-use Exception;
-
 class Route {
     public function __construct( Request $request ) {
         self::$request = $request;
     }
 
     private static      $routes               = [];
+    private static      $regexRoutes          = [];
     private static      $default              = null;
     private static      $autoloaderRegistered = false;
     private static      $instance             = null;
@@ -57,6 +56,13 @@ class Route {
             return self::runAction(self::$routes[$input], self::$request);
         }
 
+        foreach ( self::$regexRoutes as $pattern => $action ) {
+            if ( preg_match($pattern, $input) ) {
+                lg("Regex matched: {$pattern} ");
+                return self::runAction($action, self::$request);
+            }
+        }
+
         require_once paths()->route('state.php');
 
         $stateHandled = State::init(self::$request);
@@ -69,7 +75,7 @@ class Route {
             return self::runAction(self::$default, self::$request);
         }
 
-        throw new Exception("Route not found for input: " . $input);
+        throw new RuntimeException("Route not found for input: " . $input);
     }
 
     public static function state( $stateName ) {
@@ -89,6 +95,19 @@ class Route {
         }
         else {
             self::registerRoute($uri, $action);
+        }
+        return new self(self::$request ?? new Request());
+    }
+
+    public static function regex( $pattern, $action ) {
+        self::registerAutoDispatch();
+        if ( is_array($pattern) ) {
+            foreach ( $pattern as $p ) {
+                self::$regexRoutes[$p] = $action;
+            }
+        }
+        else {
+            self::$regexRoutes[$pattern] = $action;
         }
         return new self(self::$request ?? new Request());
     }
@@ -119,9 +138,12 @@ class Route {
 
     private static function normalizeInput( $input ) {
         $normalized = is_string($input) ? trim($input) : '';
-        $normalized = str_replace([ 'ي', 'ك' ], [ 'ی', 'ک' ], $normalized);
-        $normalized = preg_replace('/\s+/', ' ', $normalized);
-        return $normalized;
+
+        $normalized = str_replace([ 'ي', 'ك', "\xE2\x80\x8C", "\xE2\x80\x8D" ], [ 'ی', 'ک', ' ', ' ' ], $normalized);
+
+        $normalized = preg_replace('/[\s\x{00A0}\x{200B}]+/u', ' ', $normalized);
+
+        return trim($normalized);
     }
 
     private static function runAction( $action, Request $request ) {
@@ -143,7 +165,7 @@ class Route {
         }
 
         if ( !class_exists($controller) ) {
-            throw new Exception("Controller class not found: {$controller}");
+            throw new RuntimeException("Controller class not found: {$controller}");
         }
 
         $instance = new $controller();
@@ -152,7 +174,7 @@ class Route {
             if ( method_exists($instance, '__invoke') ) {
                 return $instance->__invoke($request);
             }
-            throw new Exception("Method not found: {$controller}::{$method}");
+            throw new RuntimeException("Method not found: {$controller}::{$method}");
         }
         if ( self::$configclear ) {
             State::clear();

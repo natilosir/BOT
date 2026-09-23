@@ -23,14 +23,54 @@ final class Database {
             throw new RuntimeException("Database config not found in: " . paths()->config);
         }
 
-        foreach ( [ 'host', 'database', 'user' ] as $key ) {
+        $capsule     = app(Capsule::class);
+        $connections = self::normalizeConnections($db);
+        $default     = $db['default'] ?? collect($connections)
+            ->keys()
+            ->first();
+
+        collect($connections)
+            ->filter(fn( $connection ) => is_array($connection))
+            ->each(function ( array $connection, string $name ) use ( $capsule ): void {
+                $capsule->addConnection(self::buildConnectionConfig($connection), $name);
+            });
+
+        $capsule->getDatabaseManager()
+            ->setDefaultConnection((string) $default);
+
+        $capsule->setAsGlobal();
+        $capsule->bootEloquent();
+
+        self::$booted = true;
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    private static function normalizeConnections( array $db ): array {
+        if ( isset($db['connections']) && is_array($db['connections']) ) {
+            return $db['connections'];
+        }
+
+        $flat = collect($db)
+            ->except([ 'default', 'connections' ])
+            ->all();
+
+        return [ 'default' => $flat ];
+    }
+
+    /**
+     * @param array<string, mixed> $db
+     * @return array<string, mixed>
+     */
+    private static function buildConnectionConfig( array $db ): array {
+        collect([ 'host', 'database', 'user' ])->each(function ( string $key ) use ( $db ): void {
             if ( !array_key_exists($key, $db) ) {
                 throw new RuntimeException("Missing database configuration key: {$key}");
             }
-        }
+        });
 
-        $capsule = new Capsule();
-        $capsule->addConnection([
+        return [
             'driver'    => $db['driver'] ?? 'mysql',
             'host'      => $db['host'],
             'port'      => $db['port'] ?? 3306,
@@ -41,10 +81,6 @@ final class Database {
             'collation' => $db['collation'] ?? 'utf8mb4_unicode_ci',
             'prefix'    => $db['prefix'] ?? '',
             'strict'    => $db['strict'] ?? true,
-        ]);
-        $capsule->setAsGlobal();
-        $capsule->bootEloquent();
-
-        self::$booted = true;
+        ];
     }
 }

@@ -20,12 +20,22 @@ abstract class Facade {
         throw new RuntimeException('Facade accessor not defined');
     }
 
-    public static function __callStatic( $method, $args ) {
+    /**
+     * Resolve the concrete service behind the facade.
+     *
+     * Kept protected so strongly typed facade accessors can reuse the same
+     * container resolution path without duplicating container logic.
+     */
+    protected static function resolveFacadeRoot(): mixed {
         if ( !static::$app ) {
             throw new RuntimeException('Facade root has not been set. Create Bootstrap with your paths before using bot facade.');
         }
 
-        $instance = static::$app->make(static::getFacadeAccessor());
+        return static::$app->make(static::getFacadeAccessor());
+    }
+
+    public static function __callStatic( $method, $args ) {
+        $instance = static::resolveFacadeRoot();
 
         return $instance->{$method}(...$args);
     }

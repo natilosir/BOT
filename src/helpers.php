@@ -21,10 +21,11 @@ if ( !function_exists('log') ) {
 }
 
 if ( !function_exists('dad') ) {
-    function dad( ...$data ): void {
+    function dad( ...$data ): never {
         foreach ( $data as $d ) {
             Log::write('DEBUG', $d);
         }
+        exit;
     }
 }
 
@@ -78,6 +79,12 @@ if ( !function_exists('paths') ) {
 
                     if ( !$app instanceof Bootstrap ) {
                         throw new RuntimeException('Bootstrap هنوز راه‌اندازی نشده است.');
+                    }
+
+                    if ( $key === 'bot.token' ) {
+                        $driver = strtolower((string) $app->config('bot.default', 'telegram'));
+
+                        return $app->config("bot.drivers.{$driver}.token", $default);
                     }
 
                     return $app->config($key, $default);
