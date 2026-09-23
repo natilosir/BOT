@@ -4,249 +4,280 @@ $green  = "\033[32m";
 $reset  = "\033[0m";
 
 $configFile = __DIR__ . '/../../../config.php';
-$sourceDir      = __DIR__ . '/../telegram-bot-sdk/';
-$destinationDir = __DIR__ . '/../../../';
 
-if ( file_exists($configFile) or !is_dir($sourceDir) ) {
+if ( file_exists($configFile) ) {
     echo $green . "✅ Configuration already completed. \n" . $reset;
     exit(0);
 }
 
-if ( is_dir($sourceDir) ) {
-    $files = scandir($sourceDir);
+function prompt( string $message ): string {
+    echo $message . ': ';
+    $handle = fopen('php://stdin', 'r');
+    $input  = fgets($handle);
+    fclose($handle);
 
-    foreach ( $files as $file ) {
-        if ( $file === '.' || $file === '..' ) {
+    return trim((string) $input);
+}
+
+function promptDefault( string $message, string $default, string $green, string $yellow, string $reset ): string {
+    $value = prompt($green . $message . $reset . ' [' . $yellow . $default . $reset . ']');
+
+    return $value === '' ? $default : $value;
+}
+
+function promptRequired( string $message, string $green, string $reset, string $errorMessage ): string {
+    while ( true ) {
+        $value = prompt($green . $message . $reset);
+        if ( $value !== '' ) {
+            return $value;
+        }
+        fwrite(STDERR, "\n❌ " . $errorMessage . "\n");
+    }
+}
+
+function promptOptional( string $message, string $default, string $green, string $yellow, string $reset ): ?string {
+    $value = prompt($green . $message . $reset . ' [' . $yellow . $default . $reset . ']');
+
+    return $value === '' ? null : $value;
+}
+
+function buildDatabaseConnectionLines( array $connection, bool $fillDefaults, string $indent = '                ' ): array {
+    $orderedKeys = [ 'driver', 'host', 'port', 'database', 'user', 'password', 'charset', 'collation', 'prefix', 'strict' ];
+
+    $defaults = [
+        'driver'    => 'mysql',
+        'host'      => 'localhost',
+        'port'      => 3306,
+        'database'  => '',
+        'user'      => '',
+        'password'  => '',
+        'charset'   => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+        'prefix'    => '',
+        'strict'    => true,
+    ];
+
+    $lines = [];
+
+    foreach ( $orderedKeys as $key ) {
+        $has = array_key_exists($key, $connection);
+
+        if ( !$has && !$fillDefaults ) {
             continue;
         }
 
-        rename($sourceDir . $file, $destinationDir . $file);
+        $value = $has ? $connection[$key] : $defaults[$key];
+
+        if ( $key === 'port' ) {
+            $lines[] = $indent . "'{$key}' => " . (int) $value . ",";
+        } elseif ( $key === 'strict' ) {
+            $lines[] = $indent . "'{$key}' => " . ( $value ? 'true' : 'false' ) . ",";
+        } else {
+            $lines[] = $indent . "'{$key}' => " . var_export($value, true) . ",";
+        }
     }
 
-    rmdir($sourceDir);
+    return $lines;
 }
 
-if ( !is_dir($sourceDir) ) {
-    function prompt( string $message ): string {
-        echo $message . ': ';
-        $handle = fopen('php://stdin', 'r');
-        $input  = fgets($handle);
-        fclose($handle);
+// ---------------------------------------------------------------------
+// Timezone
+// ---------------------------------------------------------------------
+$timezone = promptDefault('Please enter your timezone', 'Asia/Tehran', $green, $yellow, $reset);
 
-        return trim((string) $input);
+// ---------------------------------------------------------------------
+// Bot driver
+// ---------------------------------------------------------------------
+while ( true ) {
+    $botDriver = strtolower(promptDefault('Please select bot driver (telegram/bale)', 'telegram', $green, $yellow, $reset));
+
+    if ( in_array($botDriver, [ 'telegram', 'bale' ], true) ) {
+        break;
     }
 
-    function promptDefault( string $message, string $default, string $yellow, string $green, string $reset ): string {
-        $value = prompt($green . $message . $reset . ' [if empty: ' . $yellow . $default . $reset . ']');
+    fwrite(STDERR, "\n❌ Bot driver must be telegram or bale.\n");
+}
 
-        return $value === '' ? $default : $value;
-    }
-
-    /**
-     * Build connection lines.
-     *
-     * @param array<string, mixed> $connection        Raw values (may be missing keys)
-     * @param bool                 $fillDefaults      Whether to fill missing keys with defaults
-     * @param string               $indent
-     * @return list<string>
-     */
-    function buildDatabaseConnectionLines( array $connection, bool $fillDefaults, string $indent = '                ' ): array {
-        $orderedKeys = [ 'driver', 'host', 'port', 'database', 'user', 'password', 'charset', 'collation', 'prefix', 'strict' ];
-
-        $defaults = [
-            'driver'    => 'mysql',
-            'host'      => 'localhost',
-            'port'      => 3306,
-            'database'  => '',
-            'user'      => '',
-            'password'  => '',
-            'charset'   => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix'    => '',
-            'strict'    => true,
-        ];
-
-        $lines = [];
-
-        foreach ( $orderedKeys as $key ) {
-            $has = array_key_exists($key, $connection);
-
-            if ( !$has && !$fillDefaults ) {
-                continue;
-            }
-
-            $value = $has ? $connection[$key] : $defaults[$key];
-
-            if ( $key === 'port' ) {
-                $lines[] = $indent . "'{$key}' => " . (int) $value . ",";
-            } elseif ( $key === 'strict' ) {
-                $lines[] = $indent . "'{$key}' => " . ( $value ? 'true' : 'false' ) . ",";
-            } else {
-                $lines[] = $indent . "'{$key}' => " . var_export($value, true) . ",";
-            }
-        }
-
-        return $lines;
-    }
-
-    $botDriver = strtolower(promptDefault('Please select bot driver (telegram/bale)', 'telegram', $yellow, $green, $reset));
-
-    if ( !in_array($botDriver, [ 'telegram', 'bale' ], true) ) {
-        fwrite(STDERR, "\n❌ Bot driver must be telegram or bale.\n");
-        exit(1);
-    }
-
+// ---------------------------------------------------------------------
+// Bot tokens
+// ---------------------------------------------------------------------
+while ( true ) {
     $telegramBotToken = prompt($green . 'Please enter Telegram bot token (leave empty if unused)' . $reset);
     $baleBotToken     = prompt($green . 'Please enter Bale bot token (leave empty if unused)' . $reset);
 
     $selectedToken = $botDriver === 'telegram' ? $telegramBotToken : $baleBotToken;
-    if ( $selectedToken === '' ) {
-        fwrite(STDERR, "\n❌ The selected default driver [{$botDriver}] must have a token.\n");
-        exit(1);
+
+    if ( $selectedToken !== '' ) {
+        break;
     }
 
-    $telegramWebhookSecret = $telegramBotToken !== '' ? bin2hex(random_bytes(24)) : '';
+    fwrite(STDERR, "\n❌ The selected default driver [{$botDriver}] must have a token.\n");
+}
 
-    // ---------------------------------------------------------------------
-    // Database connections
-    // ---------------------------------------------------------------------
+// secret_token همیشه خالی
+$telegramWebhookSecret = '';
 
-    $connectionCount = (int) promptDefault('Please enter number of database connections', '1', $yellow, $green, $reset);
+// ---------------------------------------------------------------------
+// Database connections
+// ---------------------------------------------------------------------
 
-    if ( $connectionCount < 1 ) {
-        $connectionCount = 1;
+while ( true ) {
+    $connectionCount = (int) promptDefault('Please enter number of database connections', '1', $green, $yellow, $reset);
+
+    if ( $connectionCount >= 1 ) {
+        break;
     }
 
-    $databaseConnections = [];
+    fwrite(STDERR, "\n❌ Number of connections must be at least 1.\n");
+}
 
-    for ( $i = 0; $i < $connectionCount; $i++ ) {
-        $defaultName = $i === 0 ? 'default' : 'database' . ( $i + 1 );
+$databaseConnections = [];
 
-        echo "\n" . $green . "Database connection #" . ( $i + 1 ) . $reset . "\n";
+for ( $i = 0; $i < $connectionCount; $i++ ) {
+    $defaultName = $i === 0 ? 'mysql' : 'database' . ( $i + 1 );
 
-        $connectionName = promptDefault('Please enter connection name', $defaultName, $yellow, $green, $reset);
-        $connectionName = preg_replace('/[^a-zA-Z0-9_]/', '_', $connectionName);
+    echo "\n" . $green . "Database connection #" . ( $i + 1 ) . $reset . "\n";
 
-        if ( $connectionName === '' || $connectionName === null ) {
-            $connectionName = $defaultName;
+    $connectionName = promptDefault('Please enter connection name', $defaultName, $green, $yellow, $reset);
+    $connectionName = preg_replace('/[^a-zA-Z0-9_]/', '_', $connectionName);
+
+    if ( $connectionName === '' || $connectionName === null ) {
+        $connectionName = $defaultName;
+    }
+
+    while ( isset($databaseConnections[$connectionName]) ) {
+        $connectionName .= '_' . ( $i + 1 );
+    }
+
+    $connection = [];
+
+    $connection['host']     = promptRequired('Please enter your database host', $green, $reset, 'Database host is required.');
+    $connection['user']     = promptRequired('Please enter your database username', $green, $reset, 'Database username is required.');
+    $connection['database'] = promptRequired('Please enter your database name', $green, $reset, 'Database name is required.');
+
+    $dbDriver = promptOptional('Please enter database driver', 'mysql', $green, $yellow, $reset);
+    if ( $dbDriver !== null ) {
+        $connection['driver'] = $dbDriver;
+    }
+
+    while ( true ) {
+        $dbPort = promptOptional('Please enter database port', '3306', $green, $yellow, $reset);
+
+        if ( $dbPort === null ) {
+            break;
         }
 
-        while ( isset($databaseConnections[$connectionName]) ) {
-            $connectionName .= '_' . ( $i + 1 );
-        }
-
-        $connection = [];
-
-        // ---- Required fields ----
-        $dbHost = prompt($green . 'Please enter your database host' . $reset);
-        if ( $dbHost === '' ) {
-            fwrite(STDERR, "\n❌ Database host is required.\n");
-            exit(1);
-        }
-        $connection['host'] = $dbHost;
-
-        $dbUser = prompt($green . 'Please enter your database username' . $reset);
-        if ( $dbUser === '' ) {
-            fwrite(STDERR, "\n❌ Database username is required.\n");
-            exit(1);
-        }
-        $connection['user'] = $dbUser;
-
-        $dbName = prompt($green . 'Please enter your database name' . $reset);
-        if ( $dbName === '' ) {
-            fwrite(STDERR, "\n❌ Database name is required.\n");
-            exit(1);
-        }
-        $connection['database'] = $dbName;
-
-        // ---- Optional fields (omit if empty) ----
-        $dbDriver = prompt($green . 'Please enter database driver' . $reset . ' [if empty: ' . $yellow . 'mysql' . $reset . ']');
-        if ( $dbDriver !== '' ) {
-            $connection['driver'] = $dbDriver;
-        }
-
-        $dbPort = prompt($green . 'Please enter database port' . $reset . ' [if empty: ' . $yellow . '3306' . $reset . ']');
-        if ( $dbPort !== '' ) {
-            if ( !ctype_digit($dbPort) ) {
-                fwrite(STDERR, "\n❌ Invalid database port.\n");
-                exit(1);
-            }
+        if ( ctype_digit($dbPort) ) {
             $connection['port'] = (int) $dbPort;
+            break;
         }
 
-        $dbPassword = prompt($green . 'Please enter database password' . $reset . ' [if empty: ' . $yellow . "''" . $reset . ']');
-        if ( $dbPassword !== '' ) {
-            $connection['password'] = $dbPassword;
+        fwrite(STDERR, "\n❌ Invalid database port. Please enter a number.\n");
+    }
+
+    $dbPassword = promptOptional('Please enter database password', "''", $green, $yellow, $reset);
+    if ( $dbPassword !== null ) {
+        $connection['password'] = $dbPassword;
+    }
+
+    $dbCharset = promptOptional('Please enter database charset', 'utf8mb4', $green, $yellow, $reset);
+    if ( $dbCharset !== null ) {
+        $connection['charset'] = $dbCharset;
+    }
+
+    $dbCollation = promptOptional('Please enter database collation', 'utf8mb4_unicode_ci', $green, $yellow, $reset);
+    if ( $dbCollation !== null ) {
+        $connection['collation'] = $dbCollation;
+    }
+
+    $dbPrefix = promptOptional('Please enter database prefix', "''", $green, $yellow, $reset);
+    if ( $dbPrefix !== null ) {
+        $connection['prefix'] = $dbPrefix;
+    }
+
+    while ( true ) {
+        $dbStrict = promptOptional('Please enter database strict mode (true/false)', 'true', $green, $yellow, $reset);
+
+        if ( $dbStrict === null ) {
+            break;
         }
 
-        $dbCharset = prompt($green . 'Please enter database charset' . $reset . ' [if empty: ' . $yellow . 'utf8mb4' . $reset . ']');
-        if ( $dbCharset !== '' ) {
-            $connection['charset'] = $dbCharset;
-        }
+        $strict = strtolower($dbStrict);
 
-        $dbCollation = prompt($green . 'Please enter database collation' . $reset . ' [if empty: ' . $yellow . 'utf8mb4_unicode_ci' . $reset . ']');
-        if ( $dbCollation !== '' ) {
-            $connection['collation'] = $dbCollation;
-        }
-
-        $dbPrefix = prompt($green . 'Please enter database prefix' . $reset . ' [if empty: ' . $yellow . "''" . $reset . ']');
-        if ( $dbPrefix !== '' ) {
-            $connection['prefix'] = $dbPrefix;
-        }
-
-        $dbStrict = prompt($green . 'Please enter database strict mode (true/false)' . $reset . ' [if empty: ' . $yellow . 'true' . $reset . ']');
-        if ( $dbStrict !== '' ) {
-            $strict = strtolower($dbStrict);
-            if ( !in_array($strict, [ 'true', 'false', '1', '0' ], true) ) {
-                fwrite(STDERR, "\n❌ Strict mode must be true or false.\n");
-                exit(1);
-            }
+        if ( in_array($strict, [ 'true', 'false', '1', '0' ], true) ) {
             $connection['strict'] = in_array($strict, [ 'true', '1' ], true);
+            break;
         }
 
-        $databaseConnections[$connectionName] = $connection;
+        fwrite(STDERR, "\n❌ Strict mode must be true or false.\n");
     }
 
-    $firstConnectionName = array_key_first($databaseConnections);
+    $databaseConnections[$connectionName] = $connection;
+}
 
-    $databaseLines   = [];
-    $databaseLines[] = "        'default' => " . var_export($firstConnectionName, true) . ",";
-    $databaseLines[] = "        'connections' => [";
+$firstConnectionName = array_key_first($databaseConnections);
 
-    $index = 0;
+$databaseLines   = [];
+$databaseLines[] = "        'default' => " . var_export($firstConnectionName, true) . ",";
+$databaseLines[] = "        'connections' => [";
 
-    foreach ( $databaseConnections as $name => $connection ) {
-        if ( $index === 0 ) {
-            $databaseLines[] = "            " . var_export($name, true) . " => [";
-            foreach ( buildDatabaseConnectionLines($connection, false) as $line ) {
-                $databaseLines[] = $line;
-            }
-            $databaseLines[] = "            ],";
-        } else {
-            $databaseLines[] = "            /*";
-            $databaseLines[] = "            " . var_export($name, true) . " => [";
-            foreach ( buildDatabaseConnectionLines($connection, true) as $line ) {
-                $databaseLines[] = $line;
-            }
-            $databaseLines[] = "            ],";
-            $databaseLines[] = "            */";
+$index = 0;
+
+foreach ( $databaseConnections as $name => $connection ) {
+    if ( $index === 0 ) {
+        $databaseLines[] = "            " . var_export($name, true) . " => [";
+        foreach ( buildDatabaseConnectionLines($connection, false) as $line ) {
+            $databaseLines[] = $line;
         }
-
-        $index++;
+        $databaseLines[] = "            ],";
+    } else {
+        $databaseLines[] = "            /*";
+        $databaseLines[] = "            " . var_export($name, true) . " => [";
+        foreach ( buildDatabaseConnectionLines($connection, true) as $line ) {
+            $databaseLines[] = $line;
+        }
+        $databaseLines[] = "            ],";
+        $databaseLines[] = "            */";
     }
 
-    $databaseLines[] = "        ],";
+    $index++;
+}
 
-    $databaseConfig = implode("\n", $databaseLines);
+$databaseLines[] = "        ],";
 
-    $configContent = <<<'EOD'
+$databaseConfig = implode("\n", $databaseLines);
+
+$configContent = <<<'EOD'
 <?php
 
 return [
 
-    'timezone' => 'Asia/Tehran',
+    /*
+    |--------------------------------------------------------------------------
+    | Application Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Timezone, locale and calendar settings for the application.
+    |
+    */
+
+    'timezone' => %TIMEZONE%,
     'locale'   => 'fa',
     'calendar' => 'jalali',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Bot Configuration
+    |--------------------------------------------------------------------------
+    |
+    | `default` only selects the outgoing default driver.
+    | Incoming webhook requests are resolved automatically from their
+    | dedicated webhook URL (and Telegram secret header when configured).
+    |
+    | `paths()->config('bot.token')` remains a virtual compatibility alias and
+    | resolves to bot.drivers.<default>.token. No token is duplicated here.
+    |
+    */
 
     'bot' => [
         'default' => %BOT_DRIVER%,
@@ -273,6 +304,17 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Database Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This section contains the configuration for the database connection.
+    | You need to provide the host, username, password, and database name
+    | to connect to your database.
+    |
+    */
+
     'database' => [
 %DATABASE_CONFIG%
     ],
@@ -280,27 +322,25 @@ return [
 ];
 EOD;
 
-    $configContent = str_replace([
-        '%BOT_DRIVER%',
-        '%TELEGRAM_BOT_TOKEN%',
-        '%BALE_BOT_TOKEN%',
-        '%TELEGRAM_WEBHOOK_SECRET%',
-        '%DATABASE_CONFIG%',
-    ], [
-        var_export($botDriver, true),
-        var_export($telegramBotToken, true),
-        var_export($baleBotToken, true),
-        var_export($telegramWebhookSecret, true),
-        $databaseConfig,
-    ], $configContent);
+$configContent = str_replace([
+    '%TIMEZONE%',
+    '%BOT_DRIVER%',
+    '%TELEGRAM_BOT_TOKEN%',
+    '%BALE_BOT_TOKEN%',
+    '%TELEGRAM_WEBHOOK_SECRET%',
+    '%DATABASE_CONFIG%',
+], [
+    var_export($timezone, true),
+    var_export($botDriver, true),
+    var_export($telegramBotToken, true),
+    var_export($baleBotToken, true),
+    var_export($telegramWebhookSecret, true),
+    $databaseConfig,
+], $configContent);
 
-    if ( file_put_contents($configFile, $configContent) === false ) {
-        fwrite(STDERR, "\n❌ Could not create config.php.\n");
-        exit(1);
-    }
+if ( file_put_contents($configFile, $configContent) === false ) {
+    fwrite(STDERR, "\n❌ Could not create config.php.\n");
+    exit(1);
+}
 
-    echo "\n✅ The application is ready to run. Please read the documentation.\n";
-}
-else {
-    echo "ERROR: Source directory not found.\n";
-}
+echo "\n✅ The application is ready to run. Please read the documentation.\n";
