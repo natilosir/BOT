@@ -1,48 +1,132 @@
 <?php
+
 $yellow = "\033[33m";
 $green  = "\033[32m";
 $reset  = "\033[0m";
 
 $configFile = __DIR__ . '/../../../config.php';
 
-if ( file_exists($configFile) ) {
-    echo $green . "✅ Configuration already completed. \n" . $reset;
+if (file_exists($configFile)) {
+    echo $green . "✅ Configuration already completed.\n" . $reset;
     exit(0);
 }
 
-function prompt( string $message ): string {
-    echo $message . ': ';
-    $handle = fopen('php://stdin', 'r');
-    $input  = fgets($handle);
-    fclose($handle);
-
-    return trim((string) $input);
+function isInteractive(): bool
+{
+    if (!defined('STDIN')) {
+        return false;
+    }
+    if (function_exists('stream_isatty')) {
+        return @stream_isatty(STDIN);
+    }
+    if (function_exists('posix_isatty')) {
+        return @posix_isatty(STDIN);
+    }
+    return false;
 }
 
-function promptDefault( string $message, string $default, string $green, string $yellow, string $reset ): string {
-    $value = prompt($green . $message . $reset . ' [' . $yellow . $default . $reset . ']');
+$consoleIn  = null;
+$consoleOut = null;
 
-    return $value === '' ? $default : $value;
-}
-
-function promptRequired( string $message, string $green, string $reset, string $errorMessage ): string {
-    while ( true ) {
-        $value = prompt($green . $message . $reset);
-        if ( $value !== '' ) {
-            return $value;
+if (isInteractive()) {
+    $consoleIn  = STDIN;
+    $consoleOut = STDOUT;
+} else {
+    if (DIRECTORY_SEPARATOR !== '\\' && @file_exists('/dev/tty')) {
+        $tty = @fopen('/dev/tty', 'r+');
+        if ($tty !== false) {
+            $consoleIn  = $tty;
+            $consoleOut = $tty;
         }
-        fwrite(STDERR, "\n❌ " . $errorMessage . "\n");
+    }
+
+    if ($consoleIn === null && DIRECTORY_SEPARATOR === '\\') {
+        if (getenv('BOT_INSTALL_RELAUNCHED') === '1') {
+            fwrite(STDERR, $yellow . "⚠️  Cannot open an interactive console.\n" . $reset);
+            fwrite(STDERR, "Run manually:\n\n");
+            fwrite(STDERR, $green . "    php vendor/natilosir/bot/install.php\n\n" . $reset);
+            exit(0);
+        }
+
+        $php    = PHP_BINARY;
+        $script = __FILE__;
+
+        $bat = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'bot_install_' . uniqid() . '.bat';
+
+        $batContent = "@echo off\r\n"
+                      . "set BOT_INSTALL_RELAUNCHED=1\r\n"
+                      . "title Bot Config Setup\r\n"
+                      . '"' . $php . '" "' . $script . '"' . "\r\n"
+                      . "echo.\r\n"
+                      . "pause\r\n";
+
+        if (@file_put_contents($bat, $batContent) !== false) {
+            $cmd = 'start "Bot Config Setup" /wait cmd /c "' . $bat . '"';
+            @pclose(@popen($cmd, 'r'));
+            @unlink($bat);
+            exit(0);
+        }
+
+        fwrite(STDERR, $yellow . "⚠️  Could not launch an interactive console.\n" . $reset);
+        fwrite(STDERR, "Run manually:\n\n");
+        fwrite(STDERR, $green . "    php vendor/natilosir/bot/install.php\n\n" . $reset);
+        exit(0);
+    }
+
+    if ($consoleIn === null) {
+        fwrite(STDERR, $yellow . "⚠️  No interactive console available.\n" . $reset);
+        fwrite(STDERR, "Run manually:\n\n");
+        fwrite(STDERR, $green . "    php vendor/natilosir/bot/install.php\n\n" . $reset);
+        exit(0);
     }
 }
 
-function promptOptional( string $message, string $default, string $green, string $yellow, string $reset ): ?string {
-    $value = prompt($green . $message . $reset . ' [' . $yellow . $default . $reset . ']');
+function prompt(string $message): string
+{
+    global $consoleIn, $consoleOut;
 
+    fwrite($consoleOut, $message . ': ');
+    @fflush($consoleOut);
+
+    $line = fgets($consoleIn);
+
+    if ($line === false) {
+        fwrite($consoleOut, "\n");
+        fwrite($consoleOut, "❌ End of input.\n");
+        exit(1);
+    }
+
+    return trim($line);
+}
+
+function promptDefault(string $message, string $default, string $green, string $yellow, string $reset): string
+{
+    $value = prompt($green . $message . $reset . ' [' . $yellow . $default . $reset . ']');
+    return $value === '' ? $default : $value;
+}
+
+function promptRequired(string $message, string $green, string $reset, string $errorMessage): string
+{
+    global $consoleOut;
+
+    while (true) {
+        $value = prompt($green . $message . $reset);
+        if ($value !== '') {
+            return $value;
+        }
+        fwrite($consoleOut, "\n❌ " . $errorMessage . "\n");
+    }
+}
+
+function promptOptional(string $message, string $default, string $green, string $yellow, string $reset): ?string
+{
+    $value = prompt($green . $message . $reset . ' [' . $yellow . $default . $reset . ']');
     return $value === '' ? null : $value;
 }
 
-function buildDatabaseConnectionLines( array $connection, bool $fillDefaults, string $indent = '                ' ): array {
-    $orderedKeys = [ 'driver', 'host', 'port', 'database', 'user', 'password', 'charset', 'collation', 'prefix', 'strict' ];
+function buildDatabaseConnectionLines(array $connection, bool $fillDefaults, string $indent = '                '): array
+{
+    $orderedKeys = ['driver', 'host', 'port', 'database', 'user', 'password', 'charset', 'collation', 'prefix', 'strict'];
 
     $defaults = [
         'driver'    => 'mysql',
@@ -59,19 +143,19 @@ function buildDatabaseConnectionLines( array $connection, bool $fillDefaults, st
 
     $lines = [];
 
-    foreach ( $orderedKeys as $key ) {
+    foreach ($orderedKeys as $key) {
         $has = array_key_exists($key, $connection);
 
-        if ( !$has && !$fillDefaults ) {
+        if (!$has && !$fillDefaults) {
             continue;
         }
 
         $value = $has ? $connection[$key] : $defaults[$key];
 
-        if ( $key === 'port' ) {
+        if ($key === 'port') {
             $lines[] = $indent . "'{$key}' => " . (int) $value . ",";
-        } elseif ( $key === 'strict' ) {
-            $lines[] = $indent . "'{$key}' => " . ( $value ? 'true' : 'false' ) . ",";
+        } elseif ($key === 'strict') {
+            $lines[] = $indent . "'{$key}' => " . ($value ? 'true' : 'false') . ",";
         } else {
             $lines[] = $indent . "'{$key}' => " . var_export($value, true) . ",";
         }
@@ -80,51 +164,37 @@ function buildDatabaseConnectionLines( array $connection, bool $fillDefaults, st
     return $lines;
 }
 
-// ---------------------------------------------------------------------
-// Timezone
-// ---------------------------------------------------------------------
 $timezone = promptDefault('Please enter your timezone', 'Asia/Tehran', $green, $yellow, $reset);
 
-// ---------------------------------------------------------------------
-// Bot driver
-// ---------------------------------------------------------------------
-while ( true ) {
+while (true) {
     $botDriver = strtolower(promptDefault('Please select bot driver (telegram/bale)', 'telegram', $green, $yellow, $reset));
 
-    if ( in_array($botDriver, [ 'telegram', 'bale' ], true) ) {
+    if (in_array($botDriver, ['telegram', 'bale'], true)) {
         break;
     }
 
     fwrite(STDERR, "\n❌ Bot driver must be telegram or bale.\n");
 }
 
-// ---------------------------------------------------------------------
-// Bot tokens
-// ---------------------------------------------------------------------
-while ( true ) {
+while (true) {
     $telegramBotToken = prompt($green . 'Please enter Telegram bot token (leave empty if unused)' . $reset);
     $baleBotToken     = prompt($green . 'Please enter Bale bot token (leave empty if unused)' . $reset);
 
     $selectedToken = $botDriver === 'telegram' ? $telegramBotToken : $baleBotToken;
 
-    if ( $selectedToken !== '' ) {
+    if ($selectedToken !== '') {
         break;
     }
 
     fwrite(STDERR, "\n❌ The selected default driver [{$botDriver}] must have a token.\n");
 }
 
-// secret_token همیشه خالی
 $telegramWebhookSecret = '';
 
-// ---------------------------------------------------------------------
-// Database connections
-// ---------------------------------------------------------------------
-
-while ( true ) {
+while (true) {
     $connectionCount = (int) promptDefault('Please enter number of database connections', '1', $green, $yellow, $reset);
 
-    if ( $connectionCount >= 1 ) {
+    if ($connectionCount >= 1) {
         break;
     }
 
@@ -133,20 +203,20 @@ while ( true ) {
 
 $databaseConnections = [];
 
-for ( $i = 0; $i < $connectionCount; $i++ ) {
-    $defaultName = $i === 0 ? 'mysql' : 'database' . ( $i + 1 );
+for ($i = 0; $i < $connectionCount; $i++) {
+    $defaultName = $i === 0 ? 'mysql' : 'database' . ($i + 1);
 
-    echo "\n" . $green . "Database connection #" . ( $i + 1 ) . $reset . "\n";
+    echo "\n" . $green . "Database connection #" . ($i + 1) . $reset . "\n";
 
     $connectionName = promptDefault('Please enter connection name', $defaultName, $green, $yellow, $reset);
     $connectionName = preg_replace('/[^a-zA-Z0-9_]/', '_', $connectionName);
 
-    if ( $connectionName === '' || $connectionName === null ) {
+    if ($connectionName === '' || $connectionName === null) {
         $connectionName = $defaultName;
     }
 
-    while ( isset($databaseConnections[$connectionName]) ) {
-        $connectionName .= '_' . ( $i + 1 );
+    while (isset($databaseConnections[$connectionName])) {
+        $connectionName .= '_' . ($i + 1);
     }
 
     $connection = [];
@@ -156,18 +226,18 @@ for ( $i = 0; $i < $connectionCount; $i++ ) {
     $connection['database'] = promptRequired('Please enter your database name', $green, $reset, 'Database name is required.');
 
     $dbDriver = promptOptional('Please enter database driver', 'mysql', $green, $yellow, $reset);
-    if ( $dbDriver !== null ) {
+    if ($dbDriver !== null) {
         $connection['driver'] = $dbDriver;
     }
 
-    while ( true ) {
+    while (true) {
         $dbPort = promptOptional('Please enter database port', '3306', $green, $yellow, $reset);
 
-        if ( $dbPort === null ) {
+        if ($dbPort === null) {
             break;
         }
 
-        if ( ctype_digit($dbPort) ) {
+        if (ctype_digit($dbPort)) {
             $connection['port'] = (int) $dbPort;
             break;
         }
@@ -176,36 +246,36 @@ for ( $i = 0; $i < $connectionCount; $i++ ) {
     }
 
     $dbPassword = promptOptional('Please enter database password', "''", $green, $yellow, $reset);
-    if ( $dbPassword !== null ) {
+    if ($dbPassword !== null) {
         $connection['password'] = $dbPassword;
     }
 
     $dbCharset = promptOptional('Please enter database charset', 'utf8mb4', $green, $yellow, $reset);
-    if ( $dbCharset !== null ) {
+    if ($dbCharset !== null) {
         $connection['charset'] = $dbCharset;
     }
 
     $dbCollation = promptOptional('Please enter database collation', 'utf8mb4_unicode_ci', $green, $yellow, $reset);
-    if ( $dbCollation !== null ) {
+    if ($dbCollation !== null) {
         $connection['collation'] = $dbCollation;
     }
 
     $dbPrefix = promptOptional('Please enter database prefix', "''", $green, $yellow, $reset);
-    if ( $dbPrefix !== null ) {
+    if ($dbPrefix !== null) {
         $connection['prefix'] = $dbPrefix;
     }
 
-    while ( true ) {
+    while (true) {
         $dbStrict = promptOptional('Please enter database strict mode (true/false)', 'true', $green, $yellow, $reset);
 
-        if ( $dbStrict === null ) {
+        if ($dbStrict === null) {
             break;
         }
 
         $strict = strtolower($dbStrict);
 
-        if ( in_array($strict, [ 'true', 'false', '1', '0' ], true) ) {
-            $connection['strict'] = in_array($strict, [ 'true', '1' ], true);
+        if (in_array($strict, ['true', 'false', '1', '0'], true)) {
+            $connection['strict'] = in_array($strict, ['true', '1'], true);
             break;
         }
 
@@ -223,17 +293,17 @@ $databaseLines[] = "        'connections' => [";
 
 $index = 0;
 
-foreach ( $databaseConnections as $name => $connection ) {
-    if ( $index === 0 ) {
+foreach ($databaseConnections as $name => $connection) {
+    if ($index === 0) {
         $databaseLines[] = "            " . var_export($name, true) . " => [";
-        foreach ( buildDatabaseConnectionLines($connection, false) as $line ) {
+        foreach (buildDatabaseConnectionLines($connection, false) as $line) {
             $databaseLines[] = $line;
         }
         $databaseLines[] = "            ],";
     } else {
         $databaseLines[] = "            /*";
         $databaseLines[] = "            " . var_export($name, true) . " => [";
-        foreach ( buildDatabaseConnectionLines($connection, true) as $line ) {
+        foreach (buildDatabaseConnectionLines($connection, true) as $line) {
             $databaseLines[] = $line;
         }
         $databaseLines[] = "            ],";
