@@ -4,27 +4,22 @@ namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
 trait EphemeralTrait {
     public function editEphemeralMessageText( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('editEphemeralMessageText', $data);
+        return $this->apiFromArguments('editEphemeralMessageText', $args);
     }
 
     public function editEphemeralMessageMedia( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('editEphemeralMessageMedia', $data);
+        return $this->apiFromArguments('editEphemeralMessageMedia', $args);
     }
 
     public function editEphemeralMessageCaption( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('editEphemeralMessageCaption', $data);
+        return $this->apiFromArguments('editEphemeralMessageCaption', $args);
     }
 
     public function editEphemeralMessageReplyMarkup( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('editEphemeralMessageReplyMarkup', $data);
+        return $this->apiFromArguments('editEphemeralMessageReplyMarkup', $args);
     }
 
     public function deleteEphemeralMessage( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('deleteEphemeralMessage', $data);
+        return $this->apiFromArguments('deleteEphemeralMessage', $args);
     }
 }

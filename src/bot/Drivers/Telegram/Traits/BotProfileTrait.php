@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait BotProfileTrait {
     public function setMyCommands( $commandsOrData, $scope = null, $languageCode = null ) {
         if ( is_array($commandsOrData) && array_key_exists('commands', $commandsOrData) ) {
@@ -9,8 +11,8 @@ trait BotProfileTrait {
         }
 
         $data = [ 'commands' => $commandsOrData ];
-        $this->addOptional($data, 'scope', $scope);
-        $this->addOptional($data, 'language_code', $languageCode);
+        Arr::set($data, 'scope', $scope);
+        Arr::set($data, 'language_code', $languageCode);
         return $this->api('setMyCommands', $data);
     }
 
@@ -19,8 +21,8 @@ trait BotProfileTrait {
             return $this->api('deleteMyCommands', $scopeOrData);
         }
         $data = [];
-        $this->addOptional($data, 'scope', $scopeOrData);
-        $this->addOptional($data, 'language_code', $languageCode);
+        Arr::set($data, 'scope', $scopeOrData);
+        Arr::set($data, 'language_code', $languageCode);
         return $this->api('deleteMyCommands', $data);
     }
 
@@ -29,59 +31,58 @@ trait BotProfileTrait {
             return $this->api('getMyCommands', $scopeOrData);
         }
         $data = [];
-        $this->addOptional($data, 'scope', $scopeOrData);
-        $this->addOptional($data, 'language_code', $languageCode);
+        Arr::set($data, 'scope', $scopeOrData);
+        Arr::set($data, 'language_code', $languageCode);
         return $this->api('getMyCommands', $data);
     }
 
     public function setMyName( $nameOrData = null, $languageCode = null ) {
         if ( is_array($nameOrData) ) return $this->api('setMyName', $nameOrData);
         $data = [];
-        $this->addOptional($data, 'name', $nameOrData);
-        $this->addOptional($data, 'language_code', $languageCode);
+        Arr::set($data, 'name', $nameOrData);
+        Arr::set($data, 'language_code', $languageCode);
         return $this->api('setMyName', $data);
     }
 
     public function getMyName( $languageCodeOrData = null ) {
         if ( is_array($languageCodeOrData) ) return $this->api('getMyName', $languageCodeOrData);
         $data = [];
-        $this->addOptional($data, 'language_code', $languageCodeOrData);
+        Arr::set($data, 'language_code', $languageCodeOrData);
         return $this->api('getMyName', $data);
     }
 
     public function setMyDescription( $descriptionOrData = null, $languageCode = null ) {
         if ( is_array($descriptionOrData) ) return $this->api('setMyDescription', $descriptionOrData);
         $data = [];
-        $this->addOptional($data, 'description', $descriptionOrData);
-        $this->addOptional($data, 'language_code', $languageCode);
+        Arr::set($data, 'description', $descriptionOrData);
+        Arr::set($data, 'language_code', $languageCode);
         return $this->api('setMyDescription', $data);
     }
 
     public function getMyDescription( $languageCodeOrData = null ) {
         if ( is_array($languageCodeOrData) ) return $this->api('getMyDescription', $languageCodeOrData);
         $data = [];
-        $this->addOptional($data, 'language_code', $languageCodeOrData);
+        Arr::set($data, 'language_code', $languageCodeOrData);
         return $this->api('getMyDescription', $data);
     }
 
     public function setMyShortDescription( $shortDescriptionOrData = null, $languageCode = null ) {
         if ( is_array($shortDescriptionOrData) ) return $this->api('setMyShortDescription', $shortDescriptionOrData);
         $data = [];
-        $this->addOptional($data, 'short_description', $shortDescriptionOrData);
-        $this->addOptional($data, 'language_code', $languageCode);
+        Arr::set($data, 'short_description', $shortDescriptionOrData);
+        Arr::set($data, 'language_code', $languageCode);
         return $this->api('setMyShortDescription', $data);
     }
 
     public function getMyShortDescription( $languageCodeOrData = null ) {
         if ( is_array($languageCodeOrData) ) return $this->api('getMyShortDescription', $languageCodeOrData);
         $data = [];
-        $this->addOptional($data, 'language_code', $languageCodeOrData);
+        Arr::set($data, 'language_code', $languageCodeOrData);
         return $this->api('getMyShortDescription', $data);
     }
 
     public function setMyProfilePhoto( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setMyProfilePhoto', $data);
+        return $this->apiFromArguments('setMyProfilePhoto', $args);
     }
 
     public function removeMyProfilePhoto( array $data = [] ) {
@@ -110,8 +111,8 @@ trait BotProfileTrait {
         }
 
         $data = [ 'user_id' => $userIdOrData ];
-        $this->addOptional($data, 'emoji_status_custom_emoji_id', $emojiStatusCustomEmojiId);
-        $this->addOptional($data, 'emoji_status_expiration_date', $emojiStatusExpirationDate);
+        Arr::set($data, 'emoji_status_custom_emoji_id', $emojiStatusCustomEmojiId);
+        Arr::set($data, 'emoji_status_expiration_date', $emojiStatusExpirationDate);
 
         return $this->api('setUserEmojiStatus', $data);
     }

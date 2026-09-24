@@ -2,12 +2,14 @@
 
 namespace natilosir\bot\Bot\Drivers\Bale\Traits;
 
+use Illuminate\Support\Arr;
+
 trait MessageTrait {
     public function sendMessage( $chatIdOrData, $text = null, $replyToMessageId = null, $replyMarkup = null ): mixed {
         if ( is_array($chatIdOrData) ) return $this->api('sendMessage', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'text' => $text ];
-        $this->addOptional($data, 'reply_to_message_id', $replyToMessageId);
-        $this->addOptional($data, 'reply_markup', $replyMarkup);
+        Arr::set($data, 'reply_to_message_id', $replyToMessageId);
+        Arr::set($data, 'reply_markup', $replyMarkup);
         return $this->api('sendMessage', $data);
     }
 
@@ -37,8 +39,8 @@ trait MessageTrait {
     public function answerCallbackQuery( $callbackQueryIdOrData, $text = null, $showAlert = null ): mixed {
         if ( is_array($callbackQueryIdOrData) ) return $this->api('answerCallbackQuery', $callbackQueryIdOrData);
         $data = [ 'callback_query_id' => $callbackQueryIdOrData ];
-        $this->addOptional($data, 'text', $text);
-        $this->addOptional($data, 'show_alert', $showAlert);
+        Arr::set($data, 'text', $text);
+        Arr::set($data, 'show_alert', $showAlert);
         return $this->api('answerCallbackQuery', $data);
     }
 }

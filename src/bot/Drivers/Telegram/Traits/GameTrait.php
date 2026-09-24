@@ -4,17 +4,14 @@ namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
 trait GameTrait {
     public function sendGame( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('sendGame', $data);
+        return $this->apiFromArguments('sendGame', $args);
     }
 
     public function setGameScore( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setGameScore', $data);
+        return $this->apiFromArguments('setGameScore', $args);
     }
 
     public function getGameHighScores( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('getGameHighScores', $data);
+        return $this->apiFromArguments('getGameHighScores', $args);
     }
 }

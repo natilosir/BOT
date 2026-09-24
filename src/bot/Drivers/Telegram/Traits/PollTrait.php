@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait PollTrait {
     /**
      * Important parameters are explicit; all advanced Bot API fields can be
@@ -20,8 +22,8 @@ trait PollTrait {
     public function stopPoll( $chatIdOrData, $messageId = null, $replyMarkup = null, $businessConnectionId = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('stopPoll', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'message_id' => $messageId ];
-        $this->addOptional($data, 'reply_markup', $replyMarkup);
-        $this->addOptional($data, 'business_connection_id', $businessConnectionId);
+        Arr::set($data, 'reply_markup', $replyMarkup);
+        Arr::set($data, 'business_connection_id', $businessConnectionId);
         return $this->api('stopPoll', $data);
     }
 }

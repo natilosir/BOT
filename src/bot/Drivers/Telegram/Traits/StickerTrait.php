@@ -4,80 +4,62 @@ namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
 trait StickerTrait {
     public function getStickerSet( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('getStickerSet', $data);
+        return $this->apiFromArguments('getStickerSet', $args);
     }
 
     public function getCustomEmojiStickers( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('getCustomEmojiStickers', $data);
+        return $this->apiFromArguments('getCustomEmojiStickers', $args);
     }
 
     public function uploadStickerFile( ...$args ) {
-
-        $data = $this->buildApiData($args);
-        return $this->api('uploadStickerFile', $data);
+        return $this->apiFromArguments('uploadStickerFile', $args);
     }
 
     public function createNewStickerSet( ...$args ) {
-
-        $data = $this->buildApiData($args);
-        return $this->api('createNewStickerSet', $data);
+        return $this->apiFromArguments('createNewStickerSet', $args);
     }
 
     public function addStickerToSet( ...$args ) {
-
-        $data = $this->buildApiData($args);
-        return $this->api('addStickerToSet', $data);
+        return $this->apiFromArguments('addStickerToSet', $args);
     }
 
     public function setStickerPositionInSet( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setStickerPositionInSet', $data);
+        return $this->apiFromArguments('setStickerPositionInSet', $args);
     }
 
     public function deleteStickerFromSet( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('deleteStickerFromSet', $data);
+        return $this->apiFromArguments('deleteStickerFromSet', $args);
     }
 
     public function replaceStickerInSet( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('replaceStickerInSet', $data);
+        return $this->apiFromArguments('replaceStickerInSet', $args);
     }
 
     public function setStickerEmojiList( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setStickerEmojiList', $data);
+        return $this->apiFromArguments('setStickerEmojiList', $args);
     }
 
     public function setStickerKeywords( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setStickerKeywords', $data);
+        return $this->apiFromArguments('setStickerKeywords', $args);
     }
 
     public function setStickerMaskPosition( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setStickerMaskPosition', $data);
+        return $this->apiFromArguments('setStickerMaskPosition', $args);
     }
 
     public function setStickerSetTitle( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setStickerSetTitle', $data);
+        return $this->apiFromArguments('setStickerSetTitle', $args);
     }
 
     public function setStickerSetThumbnail( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setStickerSetThumbnail', $data);
+        return $this->apiFromArguments('setStickerSetThumbnail', $args);
     }
 
     public function setCustomEmojiStickerSetThumbnail( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setCustomEmojiStickerSetThumbnail', $data);
+        return $this->apiFromArguments('setCustomEmojiStickerSetThumbnail', $args);
     }
 
     public function deleteStickerSet( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('deleteStickerSet', $data);
+        return $this->apiFromArguments('deleteStickerSet', $args);
     }
 }

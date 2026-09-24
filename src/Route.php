@@ -27,7 +27,9 @@ class Route {
             return;
         }
         self::$dispatched = true;
-        lg(self::processRequest());
+
+        $result = self::processRequest();
+        lg($result->result);
     }
 
     private static function registerAutoDispatch(): void {

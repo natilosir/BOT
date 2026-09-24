@@ -5,8 +5,8 @@ namespace natilosir\bot\Bot\Drivers;
 use Illuminate\Http\Client\Factory;
 use InvalidArgumentException;
 use natilosir\bot\Bot\Client\BaleClient;
-use natilosir\bot\Bot\Contracts\BotDriver;
 use natilosir\bot\Bot\Client\TelegramClient;
+use natilosir\bot\Bot\Contracts\BotDriver;
 
 /**
  * Creates the package's built-in drivers.

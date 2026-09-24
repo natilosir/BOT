@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait CallbackTrait {
     // Backward-compatible legacy method. Do not change its payload behavior.
     public function alert( $query_id, $text, $show_alert = false ) {
@@ -20,10 +22,10 @@ trait CallbackTrait {
         }
 
         $data = [ 'callback_query_id' => $callbackQueryIdOrData ];
-        $this->addOptional($data, 'text', $text);
-        $this->addOptional($data, 'show_alert', $showAlert);
-        $this->addOptional($data, 'url', $url);
-        $this->addOptional($data, 'cache_time', $cacheTime);
+        Arr::set($data, 'text', $text);
+        Arr::set($data, 'show_alert', $showAlert);
+        Arr::set($data, 'url', $url);
+        Arr::set($data, 'cache_time', $cacheTime);
 
         return $this->api('answerCallbackQuery', $data);
     }

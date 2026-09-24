@@ -310,7 +310,7 @@ class AdvancedLogger {
             .copy-btn{position:absolute;top:77px;right:26px;background:rgba(255,255,255,.05);
               border:1px solid var(--border);border-radius:8px;padding:5px 9px;color:var(--text-3);
               cursor:pointer;font-size:.8rem;opacity:0;transition:all .2s;z-index:5;backdrop-filter:blur(8px)}
-            .log-entry:hover .copy-btn{opacity:1}
+            .log-entry:hover .copy-btn{opacity:1;z-index:999999}
             .copy-btn:hover{background:var(--violet);color:#fff;border-color:var(--violet);transform:scale(1.05)}
             .copy-btn.copied{background:var(--green);color:#fff;border-color:var(--green)}
             
@@ -778,7 +778,7 @@ class AdvancedLogger {
             'exception' => get_class($e),
         ], 'EXCEPTION', [], $e->getFile(), $e->getLine(), $e->getTrace(), get_class($e), '__construct');
         if ( PHP_SAPI !== 'cli' && !headers_sent() ) {
-            http_response_code(500);
+            http_response_code(200);
             header('Content-Type: text/html; charset=utf-8');
         }
         $message = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');

@@ -4,17 +4,14 @@ namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
 trait RichMessageTrait {
     public function sendMessageDraft( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('sendMessageDraft', $data);
+        return $this->apiFromArguments('sendMessageDraft', $args);
     }
 
     public function sendRichMessage( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('sendRichMessage', $data);
+        return $this->apiFromArguments('sendRichMessage', $args);
     }
 
     public function sendRichMessageDraft( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('sendRichMessageDraft', $data);
+        return $this->apiFromArguments('sendRichMessageDraft', $args);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait DirectMessageTrait {
     /**
      * Approve a suggested post.
@@ -20,7 +22,7 @@ trait DirectMessageTrait {
             'chat_id'    => $chatIdOrData,
             'message_id' => $messageId,
         ];
-        $this->addOptional($data, 'send_date', $sendDate);
+        Arr::set($data, 'send_date', $sendDate);
 
         return $this->api('approveSuggestedPost', $data);
     }
@@ -38,7 +40,7 @@ trait DirectMessageTrait {
             'chat_id'    => $chatIdOrData,
             'message_id' => $messageId,
         ];
-        $this->addOptional($data, 'comment', $comment);
+        Arr::set($data, 'comment', $comment);
 
         return $this->api('declineSuggestedPost', $data);
     }

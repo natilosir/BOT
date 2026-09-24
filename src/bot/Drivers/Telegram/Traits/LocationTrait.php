@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait LocationTrait {
     public function sendLocation( $chatIdOrData, $latitude = null, $longitude = null, array $options = [] ) {
         if ( is_array($chatIdOrData) ) return $this->api('sendLocation', $chatIdOrData);
@@ -13,13 +15,11 @@ trait LocationTrait {
     }
 
     public function editMessageLiveLocation( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('editMessageLiveLocation', $data);
+        return $this->apiFromArguments('editMessageLiveLocation', $args);
     }
 
     public function stopMessageLiveLocation( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('stopMessageLiveLocation', $data);
+        return $this->apiFromArguments('stopMessageLiveLocation', $args);
     }
 
     public function sendVenue( $chatIdOrData, $latitude = null, $longitude = null, $title = null, $address = null, array $options = [] ) {
@@ -36,8 +36,8 @@ trait LocationTrait {
     public function sendContact( $chatIdOrData, $phoneNumber = null, $firstName = null, $lastName = null, $vcard = null, array $options = [] ) {
         if ( is_array($chatIdOrData) ) return $this->api('sendContact', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'phone_number' => $phoneNumber, 'first_name' => $firstName ];
-        $this->addOptional($data, 'last_name', $lastName);
-        $this->addOptional($data, 'vcard', $vcard);
+        Arr::set($data, 'last_name', $lastName);
+        Arr::set($data, 'vcard', $vcard);
         return $this->api('sendContact', $this->withExtra($data, $options));
     }
 }

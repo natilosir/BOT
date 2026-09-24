@@ -5,8 +5,9 @@ namespace natilosir\bot;
 use Illuminate\Container\Container;
 use Illuminate\Http\Client\Factory;
 use InvalidArgumentException;
-use natilosir\bot\bot\BotManager;
-use natilosir\bot\bot\DriverManager;
+use natilosir\bot\Bot\Manager\BotManager;
+use natilosir\bot\Bot\Manager\DriverManager;
+use natilosir\bot\Bot\Webhook\WebhookDriverResolver;
 use RuntimeException;
 
 /**
@@ -70,8 +71,6 @@ final class Bootstrap {
             return $base;
         }
 
-        // config_path/log_path may point to files. Appending to a file path is
-        // almost certainly a caller error, so keep path semantics explicit.
         if ( in_array($key, [ 'config_path', 'log_path' ], true) ) {
             throw new InvalidArgumentException("Cannot append a child path to [{$key}].");
         }
@@ -191,7 +190,9 @@ final class Bootstrap {
 
         $this->container->singleton(Factory::class, static fn(): Factory => new Factory());
 
-        $this->container->singleton(DriverManager::class, fn( Container $container ): DriverManager => new DriverManager($container->make(Factory::class), (array) $this->config('bot', [])));
+        $this->container->singleton(WebhookDriverResolver::class, static fn(): WebhookDriverResolver => new WebhookDriverResolver());
+
+        $this->container->singleton(DriverManager::class, fn( Container $container ): DriverManager => new DriverManager($container->make(Factory::class), (array) $this->config('bot', []), $container->make(WebhookDriverResolver::class)));
 
         $this->container->singleton(BotManager::class, static fn( Container $container ): BotManager => new BotManager($container->make(DriverManager::class)));
     }

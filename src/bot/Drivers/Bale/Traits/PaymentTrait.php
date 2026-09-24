@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Bale\Traits;
 
+use Illuminate\Support\Arr;
+
 trait PaymentTrait {
     public function sendInvoice( $chatIdOrData, $title = null, $description = null, $payload = null, $providerToken = null, $prices = null, $photoUrl = null, $replyToMessageId = null ): mixed {
         if ( is_array($chatIdOrData) ) return $this->api('sendInvoice', $chatIdOrData);
@@ -13,8 +15,8 @@ trait PaymentTrait {
             'provider_token' => $providerToken,
             'prices'         => $prices,
         ];
-        $this->addOptional($data, 'photo_url', $photoUrl);
-        $this->addOptional($data, 'reply_to_message_id', $replyToMessageId);
+        Arr::set($data, 'photo_url', $photoUrl);
+        Arr::set($data, 'reply_to_message_id', $replyToMessageId);
         return $this->api('sendInvoice', $data);
     }
 
@@ -32,7 +34,7 @@ trait PaymentTrait {
     public function answerPreCheckoutQuery( $preCheckoutQueryIdOrData, $ok = null, $errorMessage = null ): mixed {
         if ( is_array($preCheckoutQueryIdOrData) ) return $this->api('answerPreCheckoutQuery', $preCheckoutQueryIdOrData);
         $data = [ 'pre_checkout_query_id' => $preCheckoutQueryIdOrData, 'ok' => $ok ];
-        $this->addOptional($data, 'error_message', $errorMessage);
+        Arr::set($data, 'error_message', $errorMessage);
         return $this->api('answerPreCheckoutQuery', $data);
     }
 

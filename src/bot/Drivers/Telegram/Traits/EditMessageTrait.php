@@ -18,24 +18,18 @@ trait EditMessageTrait {
     }
 
     public function editMessageText( ...$args ) {
-
-        $data = $this->buildApiData($args);
-        return $this->api('editMessageText', $data);
+        return $this->apiFromArguments('editMessageText', $args);
     }
 
     public function editMessageCaption( ...$args ) {
-
-        $data = $this->buildApiData($args);
-        return $this->api('editMessageCaption', $data);
+        return $this->apiFromArguments('editMessageCaption', $args);
     }
 
     public function editMessageMedia( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('editMessageMedia', $data);
+        return $this->apiFromArguments('editMessageMedia', $args);
     }
 
     public function editMessageReplyMarkupRaw( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('editMessageReplyMarkup', $data);
+        return $this->apiFromArguments('editMessageReplyMarkup', $args);
     }
 }

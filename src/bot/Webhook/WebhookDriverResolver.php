@@ -9,9 +9,9 @@ use RuntimeException;
 final class WebhookDriverResolver {
     public function resolve( DriverManager $manager, ?WebhookRequest $request = null ): ?string {
         $request ??= WebhookRequest::capture();
-//        if ( !$request->isPost() ) {
-//            return null;
-//        }
+        //        if ( !$request->isPost() ) {
+        //            return null;
+        //        }
         $matches = [];
 
         foreach ( $manager->configuredDriverNames() as $name ) {

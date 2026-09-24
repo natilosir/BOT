@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait PaymentTrait {
     /**
      * Send an invoice with the main required fields explicit.
@@ -23,7 +25,7 @@ trait PaymentTrait {
             'description' => $description,
             'payload'     => $payload,
         ];
-        $this->addOptional($data, 'provider_token', $providerToken);
+        Arr::set($data, 'provider_token', $providerToken);
         $data['currency'] = $currency;
         $data['prices']   = $prices;
 
@@ -31,23 +33,21 @@ trait PaymentTrait {
     }
 
     public function createInvoiceLink( ...$args ) {
-
-        $data = $this->buildApiData($args);
-        return $this->api('createInvoiceLink', $data);
+        return $this->apiFromArguments('createInvoiceLink', $args);
     }
 
     public function answerShippingQuery( $shippingQueryIdOrData, $ok = null, $shippingOptions = null, $errorMessage = null ) {
         if ( is_array($shippingQueryIdOrData) ) return $this->api('answerShippingQuery', $shippingQueryIdOrData);
         $data = [ 'shipping_query_id' => $shippingQueryIdOrData, 'ok' => $ok ];
-        $this->addOptional($data, 'shipping_options', $shippingOptions);
-        $this->addOptional($data, 'error_message', $errorMessage);
+        Arr::set($data, 'shipping_options', $shippingOptions);
+        Arr::set($data, 'error_message', $errorMessage);
         return $this->api('answerShippingQuery', $data);
     }
 
     public function answerPreCheckoutQuery( $preCheckoutQueryIdOrData, $ok = null, $errorMessage = null ) {
         if ( is_array($preCheckoutQueryIdOrData) ) return $this->api('answerPreCheckoutQuery', $preCheckoutQueryIdOrData);
         $data = [ 'pre_checkout_query_id' => $preCheckoutQueryIdOrData, 'ok' => $ok ];
-        $this->addOptional($data, 'error_message', $errorMessage);
+        Arr::set($data, 'error_message', $errorMessage);
         return $this->api('answerPreCheckoutQuery', $data);
     }
 
@@ -60,17 +60,14 @@ trait PaymentTrait {
     }
 
     public function refundStarPayment( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('refundStarPayment', $data);
+        return $this->apiFromArguments('refundStarPayment', $args);
     }
 
     public function editUserStarSubscription( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('editUserStarSubscription', $data);
+        return $this->apiFromArguments('editUserStarSubscription', $args);
     }
 
     public function setPassportDataErrors( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setPassportDataErrors', $data);
+        return $this->apiFromArguments('setPassportDataErrors', $args);
     }
 }

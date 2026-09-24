@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait MessageTrait {
     // Backward-compatible legacy method.
     public function sendChatAction( $chatID, $action ) {
@@ -84,20 +86,20 @@ trait MessageTrait {
             'text'    => $text,
         ];
 
-        $this->addOptional($data, 'business_connection_id', $business_connection_id);
-        $this->addOptional($data, 'message_thread_id', $message_thread_id);
-        $this->addOptional($data, 'direct_messages_topic_id', $direct_messages_topic_id);
-        $this->addOptional($data, 'ephemeral_message_parameters', $ephemeral_message_parameters);
-        $this->addOptional($data, 'parse_mode', $parse_mode);
-        $this->addOptional($data, 'entities', $entities);
-        $this->addOptional($data, 'link_preview_options', $link_preview_options);
-        $this->addOptional($data, 'disable_notification', $disable_notification);
-        $this->addOptional($data, 'protect_content', $protect_content);
-        $this->addOptional($data, 'allow_paid_broadcast', $allow_paid_broadcast);
-        $this->addOptional($data, 'message_effect_id', $message_effect_id);
-        $this->addOptional($data, 'suggested_post_parameters', $suggested_post_parameters);
-        $this->addOptional($data, 'reply_parameters', $reply_parameters);
-        $this->addOptional($data, 'reply_markup', $reply_markup);
+        Arr::set($data, 'business_connection_id', $business_connection_id);
+        Arr::set($data, 'message_thread_id', $message_thread_id);
+        Arr::set($data, 'direct_messages_topic_id', $direct_messages_topic_id);
+        Arr::set($data, 'ephemeral_message_parameters', $ephemeral_message_parameters);
+        Arr::set($data, 'parse_mode', $parse_mode);
+        Arr::set($data, 'entities', $entities);
+        Arr::set($data, 'link_preview_options', $link_preview_options);
+        Arr::set($data, 'disable_notification', $disable_notification);
+        Arr::set($data, 'protect_content', $protect_content);
+        Arr::set($data, 'allow_paid_broadcast', $allow_paid_broadcast);
+        Arr::set($data, 'message_effect_id', $message_effect_id);
+        Arr::set($data, 'suggested_post_parameters', $suggested_post_parameters);
+        Arr::set($data, 'reply_parameters', $reply_parameters);
+        Arr::set($data, 'reply_markup', $reply_markup);
 
         return $this->api('sendMessage', $data);
     }
@@ -113,8 +115,8 @@ trait MessageTrait {
             'action'  => $action,
         ];
 
-        $this->addOptional($data, 'business_connection_id', $business_connection_id);
-        $this->addOptional($data, 'message_thread_id', $message_thread_id);
+        Arr::set($data, 'business_connection_id', $business_connection_id);
+        Arr::set($data, 'message_thread_id', $message_thread_id);
 
         return $this->api('sendChatAction', $data);
     }
@@ -131,13 +133,13 @@ trait MessageTrait {
             'message_id'   => $message_id,
         ];
 
-        $this->addOptional($data, 'message_thread_id', $message_thread_id);
-        $this->addOptional($data, 'direct_messages_topic_id', $direct_messages_topic_id);
-        $this->addOptional($data, 'video_start_timestamp', $video_start_timestamp);
-        $this->addOptional($data, 'disable_notification', $disable_notification);
-        $this->addOptional($data, 'protect_content', $protect_content);
-        $this->addOptional($data, 'message_effect_id', $message_effect_id);
-        $this->addOptional($data, 'suggested_post_parameters', $suggested_post_parameters);
+        Arr::set($data, 'message_thread_id', $message_thread_id);
+        Arr::set($data, 'direct_messages_topic_id', $direct_messages_topic_id);
+        Arr::set($data, 'video_start_timestamp', $video_start_timestamp);
+        Arr::set($data, 'disable_notification', $disable_notification);
+        Arr::set($data, 'protect_content', $protect_content);
+        Arr::set($data, 'message_effect_id', $message_effect_id);
+        Arr::set($data, 'suggested_post_parameters', $suggested_post_parameters);
 
         return $this->api('forwardMessage', $data);
     }
@@ -154,10 +156,10 @@ trait MessageTrait {
             'message_ids'  => $message_ids,
         ];
 
-        $this->addOptional($data, 'message_thread_id', $message_thread_id);
-        $this->addOptional($data, 'direct_messages_topic_id', $direct_messages_topic_id);
-        $this->addOptional($data, 'disable_notification', $disable_notification);
-        $this->addOptional($data, 'protect_content', $protect_content);
+        Arr::set($data, 'message_thread_id', $message_thread_id);
+        Arr::set($data, 'direct_messages_topic_id', $direct_messages_topic_id);
+        Arr::set($data, 'disable_notification', $disable_notification);
+        Arr::set($data, 'protect_content', $protect_content);
 
         return $this->api('forwardMessages', $data);
     }
@@ -174,20 +176,20 @@ trait MessageTrait {
             'message_id'   => $message_id,
         ];
 
-        $this->addOptional($data, 'message_thread_id', $message_thread_id);
-        $this->addOptional($data, 'direct_messages_topic_id', $direct_messages_topic_id);
-        $this->addOptional($data, 'video_start_timestamp', $video_start_timestamp);
-        $this->addOptional($data, 'caption', $caption);
-        $this->addOptional($data, 'parse_mode', $parse_mode);
-        $this->addOptional($data, 'caption_entities', $caption_entities);
-        $this->addOptional($data, 'show_caption_above_media', $show_caption_above_media);
-        $this->addOptional($data, 'disable_notification', $disable_notification);
-        $this->addOptional($data, 'protect_content', $protect_content);
-        $this->addOptional($data, 'allow_paid_broadcast', $allow_paid_broadcast);
-        $this->addOptional($data, 'message_effect_id', $message_effect_id);
-        $this->addOptional($data, 'suggested_post_parameters', $suggested_post_parameters);
-        $this->addOptional($data, 'reply_parameters', $reply_parameters);
-        $this->addOptional($data, 'reply_markup', $reply_markup);
+        Arr::set($data, 'message_thread_id', $message_thread_id);
+        Arr::set($data, 'direct_messages_topic_id', $direct_messages_topic_id);
+        Arr::set($data, 'video_start_timestamp', $video_start_timestamp);
+        Arr::set($data, 'caption', $caption);
+        Arr::set($data, 'parse_mode', $parse_mode);
+        Arr::set($data, 'caption_entities', $caption_entities);
+        Arr::set($data, 'show_caption_above_media', $show_caption_above_media);
+        Arr::set($data, 'disable_notification', $disable_notification);
+        Arr::set($data, 'protect_content', $protect_content);
+        Arr::set($data, 'allow_paid_broadcast', $allow_paid_broadcast);
+        Arr::set($data, 'message_effect_id', $message_effect_id);
+        Arr::set($data, 'suggested_post_parameters', $suggested_post_parameters);
+        Arr::set($data, 'reply_parameters', $reply_parameters);
+        Arr::set($data, 'reply_markup', $reply_markup);
 
         return $this->api('copyMessage', $data);
     }
@@ -204,11 +206,11 @@ trait MessageTrait {
             'message_ids'  => $message_ids,
         ];
 
-        $this->addOptional($data, 'message_thread_id', $message_thread_id);
-        $this->addOptional($data, 'direct_messages_topic_id', $direct_messages_topic_id);
-        $this->addOptional($data, 'disable_notification', $disable_notification);
-        $this->addOptional($data, 'protect_content', $protect_content);
-        $this->addOptional($data, 'remove_caption', $remove_caption);
+        Arr::set($data, 'message_thread_id', $message_thread_id);
+        Arr::set($data, 'direct_messages_topic_id', $direct_messages_topic_id);
+        Arr::set($data, 'disable_notification', $disable_notification);
+        Arr::set($data, 'protect_content', $protect_content);
+        Arr::set($data, 'remove_caption', $remove_caption);
 
         return $this->api('copyMessages', $data);
     }
@@ -245,17 +247,17 @@ trait MessageTrait {
 
         $data = [ 'chat_id' => $chatID ];
 
-        $this->addOptional($data, 'emoji', $emoji);
-        $this->addOptional($data, 'business_connection_id', $business_connection_id);
-        $this->addOptional($data, 'message_thread_id', $message_thread_id);
-        $this->addOptional($data, 'direct_messages_topic_id', $direct_messages_topic_id);
-        $this->addOptional($data, 'disable_notification', $disable_notification);
-        $this->addOptional($data, 'protect_content', $protect_content);
-        $this->addOptional($data, 'allow_paid_broadcast', $allow_paid_broadcast);
-        $this->addOptional($data, 'message_effect_id', $message_effect_id);
-        $this->addOptional($data, 'suggested_post_parameters', $suggested_post_parameters);
-        $this->addOptional($data, 'reply_parameters', $reply_parameters);
-        $this->addOptional($data, 'reply_markup', $reply_markup);
+        Arr::set($data, 'emoji', $emoji);
+        Arr::set($data, 'business_connection_id', $business_connection_id);
+        Arr::set($data, 'message_thread_id', $message_thread_id);
+        Arr::set($data, 'direct_messages_topic_id', $direct_messages_topic_id);
+        Arr::set($data, 'disable_notification', $disable_notification);
+        Arr::set($data, 'protect_content', $protect_content);
+        Arr::set($data, 'allow_paid_broadcast', $allow_paid_broadcast);
+        Arr::set($data, 'message_effect_id', $message_effect_id);
+        Arr::set($data, 'suggested_post_parameters', $suggested_post_parameters);
+        Arr::set($data, 'reply_parameters', $reply_parameters);
+        Arr::set($data, 'reply_markup', $reply_markup);
 
         return $this->api('sendDice', $data);
     }
@@ -271,8 +273,8 @@ trait MessageTrait {
             'message_id' => $message_id,
         ];
 
-        $this->addOptional($data, 'reaction', $reaction);
-        $this->addOptional($data, 'is_big', $is_big);
+        Arr::set($data, 'reaction', $reaction);
+        Arr::set($data, 'is_big', $is_big);
 
         return $this->api('setMessageReaction', $data);
     }
@@ -284,8 +286,8 @@ trait MessageTrait {
         }
 
         $data = [ 'chat_id' => $chatID ];
-        $this->addOptional($data, 'user_id', $user_id);
-        $this->addOptional($data, 'actor_chat_id', $actor_chat_id);
+        Arr::set($data, 'user_id', $user_id);
+        Arr::set($data, 'actor_chat_id', $actor_chat_id);
 
         return $this->api('deleteAllMessageReactions', $data);
     }
@@ -301,8 +303,8 @@ trait MessageTrait {
             'message_id' => $message_id,
         ];
 
-        $this->addOptional($data, 'user_id', $user_id);
-        $this->addOptional($data, 'actor_chat_id', $actor_chat_id);
+        Arr::set($data, 'user_id', $user_id);
+        Arr::set($data, 'actor_chat_id', $actor_chat_id);
 
         return $this->api('deleteMessageReaction', $data);
     }
@@ -319,11 +321,11 @@ trait MessageTrait {
             'checklist'              => $checklist,
         ];
 
-        $this->addOptional($data, 'disable_notification', $disable_notification);
-        $this->addOptional($data, 'protect_content', $protect_content);
-        $this->addOptional($data, 'message_effect_id', $message_effect_id);
-        $this->addOptional($data, 'reply_parameters', $reply_parameters);
-        $this->addOptional($data, 'reply_markup', $reply_markup);
+        Arr::set($data, 'disable_notification', $disable_notification);
+        Arr::set($data, 'protect_content', $protect_content);
+        Arr::set($data, 'message_effect_id', $message_effect_id);
+        Arr::set($data, 'reply_parameters', $reply_parameters);
+        Arr::set($data, 'reply_markup', $reply_markup);
 
         return $this->api('sendChecklist', $data);
     }
@@ -341,7 +343,7 @@ trait MessageTrait {
             'checklist'              => $checklist,
         ];
 
-        $this->addOptional($data, 'reply_markup', $reply_markup);
+        Arr::set($data, 'reply_markup', $reply_markup);
 
         return $this->api('editMessageChecklist', $data);
     }

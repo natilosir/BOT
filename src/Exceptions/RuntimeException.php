@@ -2,13 +2,10 @@
 
 namespace natilosir\bot\Exceptions;
 
-use natilosir\bot\log\Log;
-use natilosir\bot\Response;
+use Throwable;
 
 class RuntimeException extends \Exception {
-    public function __construct( string $response ) {
-//        Log::error($response);
-        parent::__construct($response);
+    public function __construct( string $message, int $code = 0, ?Throwable $previous = null ) {
+        parent::__construct($message, $code, $previous);
     }
-
 }

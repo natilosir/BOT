@@ -2,19 +2,21 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait ChatManagementTrait {
     public function banChatMember( $chatIdOrData, $userId = null, $untilDate = null, $revokeMessages = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('banChatMember', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'user_id' => $userId ];
-        $this->addOptional($data, 'until_date', $untilDate);
-        $this->addOptional($data, 'revoke_messages', $revokeMessages);
+        Arr::set($data, 'until_date', $untilDate);
+        Arr::set($data, 'revoke_messages', $revokeMessages);
         return $this->api('banChatMember', $data);
     }
 
     public function unbanChatMember( $chatIdOrData, $userId = null, $onlyIfBanned = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('unbanChatMember', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'user_id' => $userId ];
-        $this->addOptional($data, 'only_if_banned', $onlyIfBanned);
+        Arr::set($data, 'only_if_banned', $onlyIfBanned);
         return $this->api('unbanChatMember', $data);
     }
 
@@ -25,8 +27,8 @@ trait ChatManagementTrait {
             'user_id'     => $userId,
             'permissions' => $permissions,
         ];
-        $this->addOptional($data, 'use_independent_chat_permissions', $useIndependentChatPermissions);
-        $this->addOptional($data, 'until_date', $untilDate);
+        Arr::set($data, 'use_independent_chat_permissions', $useIndependentChatPermissions);
+        Arr::set($data, 'until_date', $untilDate);
         return $this->api('restrictChatMember', $data);
     }
 
@@ -78,7 +80,7 @@ trait ChatManagementTrait {
     public function setChatPermissions( $chatIdOrData, $permissions = null, $useIndependentChatPermissions = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('setChatPermissions', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'permissions' => $permissions ];
-        $this->addOptional($data, 'use_independent_chat_permissions', $useIndependentChatPermissions);
+        Arr::set($data, 'use_independent_chat_permissions', $useIndependentChatPermissions);
         return $this->api('setChatPermissions', $data);
     }
 
@@ -90,20 +92,20 @@ trait ChatManagementTrait {
     public function createChatInviteLink( $chatIdOrData, $name = null, $expireDate = null, $memberLimit = null, $createsJoinRequest = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('createChatInviteLink', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData ];
-        $this->addOptional($data, 'name', $name);
-        $this->addOptional($data, 'expire_date', $expireDate);
-        $this->addOptional($data, 'member_limit', $memberLimit);
-        $this->addOptional($data, 'creates_join_request', $createsJoinRequest);
+        Arr::set($data, 'name', $name);
+        Arr::set($data, 'expire_date', $expireDate);
+        Arr::set($data, 'member_limit', $memberLimit);
+        Arr::set($data, 'creates_join_request', $createsJoinRequest);
         return $this->api('createChatInviteLink', $data);
     }
 
     public function editChatInviteLink( $chatIdOrData, $inviteLink = null, $name = null, $expireDate = null, $memberLimit = null, $createsJoinRequest = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('editChatInviteLink', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'invite_link' => $inviteLink ];
-        $this->addOptional($data, 'name', $name);
-        $this->addOptional($data, 'expire_date', $expireDate);
-        $this->addOptional($data, 'member_limit', $memberLimit);
-        $this->addOptional($data, 'creates_join_request', $createsJoinRequest);
+        Arr::set($data, 'name', $name);
+        Arr::set($data, 'expire_date', $expireDate);
+        Arr::set($data, 'member_limit', $memberLimit);
+        Arr::set($data, 'creates_join_request', $createsJoinRequest);
         return $this->api('editChatInviteLink', $data);
     }
 
@@ -114,14 +116,14 @@ trait ChatManagementTrait {
             'subscription_period' => $subscriptionPeriod,
             'subscription_price'  => $subscriptionPrice,
         ];
-        $this->addOptional($data, 'name', $name);
+        Arr::set($data, 'name', $name);
         return $this->api('createChatSubscriptionInviteLink', $data);
     }
 
     public function editChatSubscriptionInviteLink( $chatIdOrData, $inviteLink = null, $name = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('editChatSubscriptionInviteLink', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'invite_link' => $inviteLink ];
-        $this->addOptional($data, 'name', $name);
+        Arr::set($data, 'name', $name);
         return $this->api('editChatSubscriptionInviteLink', $data);
     }
 
@@ -163,16 +165,16 @@ trait ChatManagementTrait {
     public function pinChatMessage( $chatIdOrData, $messageId = null, $disableNotification = null, $businessConnectionId = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('pinChatMessage', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'message_id' => $messageId ];
-        $this->addOptional($data, 'disable_notification', $disableNotification);
-        $this->addOptional($data, 'business_connection_id', $businessConnectionId);
+        Arr::set($data, 'disable_notification', $disableNotification);
+        Arr::set($data, 'business_connection_id', $businessConnectionId);
         return $this->api('pinChatMessage', $data);
     }
 
     public function unpinChatMessage( $chatIdOrData, $messageId = null, $businessConnectionId = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('unpinChatMessage', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData ];
-        $this->addOptional($data, 'message_id', $messageId);
-        $this->addOptional($data, 'business_connection_id', $businessConnectionId);
+        Arr::set($data, 'message_id', $messageId);
+        Arr::set($data, 'business_connection_id', $businessConnectionId);
         return $this->api('unpinChatMessage', $data);
     }
 

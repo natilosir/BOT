@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Bale\Traits;
 
+use Illuminate\Support\Arr;
+
 trait ChatTrait {
     public function banChatMember( $chatIdOrData, $userId = null ): mixed {
         return $this->chatUserMethod('banChatMember', $chatIdOrData, $userId);
@@ -10,7 +12,7 @@ trait ChatTrait {
     public function unbanChatMember( $chatIdOrData, $userId = null, $onlyIfBanned = null ): mixed {
         if ( is_array($chatIdOrData) ) return $this->api('unbanChatMember', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'user_id' => $userId ];
-        $this->addOptional($data, 'only_if_banned', $onlyIfBanned);
+        Arr::set($data, 'only_if_banned', $onlyIfBanned);
         return $this->api('unbanChatMember', $data);
     }
 

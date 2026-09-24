@@ -2,11 +2,10 @@
 
 namespace natilosir\bot\Exceptions;
 
-use natilosir\bot\log\Log;
+use Throwable;
 
 class ConnectionException extends \Exception {
-    public function __construct( string $response ) {
-//        Log::error($message);
-        parent::__construct($message);
+    public function __construct( string $message, int $code = 0, ?Throwable $previous = null ) {
+        parent::__construct($message, $code, $previous);
     }
 }

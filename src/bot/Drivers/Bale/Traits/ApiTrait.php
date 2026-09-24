@@ -2,47 +2,43 @@
 
 namespace natilosir\bot\Bot\Drivers\Bale\Traits;
 
-trait ApiTrait {
-    public function api( string $method, array $data = [], string $httpMethod = 'POST' ): mixed {
-        if ( strcasecmp($method, 'getChatMemberCount') === 0 ) {
-            $method = 'getChatMembersCount';
-        }
+use natilosir\bot\Bot\Drivers\Concerns\InteractsWithApi;
 
-        if ( in_array(strtolower($method), [
-            'sendmessage',
-            'sendphoto',
-            'sendaudio',
-            'senddocument',
-            'sendvideo',
-            'sendanimation',
-            'sendvoice',
-        ], true) ) {
+trait ApiTrait {
+    use InteractsWithApi;
+
+    private const METHOD_ALIASES = [
+        'getchatmembercount' => 'getChatMembersCount',
+    ];
+
+    private const METHODS_WITHOUT_PARSE_MODE = [
+        'sendmessage',
+        'sendphoto',
+        'sendaudio',
+        'senddocument',
+        'sendvideo',
+        'sendanimation',
+        'sendvoice',
+    ];
+
+    private const METHODS_WITHOUT_CURRENCY = [
+        'sendinvoice',
+        'createinvoicelink',
+    ];
+
+    public function api( string $method, array $data = [], string $httpMethod = 'POST' ): mixed {
+        $normalized = strtolower($method);
+        $method     = self::METHOD_ALIASES[$normalized] ?? $method;
+        $normalized = strtolower($method);
+
+        if ( in_array($normalized, self::METHODS_WITHOUT_PARSE_MODE, true) ) {
             unset($data['parse_mode']);
         }
 
-        if ( strcasecmp($method, 'sendInvoice') === 0
-             || strcasecmp($method, 'createInvoiceLink') === 0 ) {
+        if ( in_array($normalized, self::METHODS_WITHOUT_CURRENCY, true) ) {
             unset($data['currency']);
         }
 
         return parent::api($method, $data, $httpMethod);
-    }
-
-    public function request( string $method, array $data = [], string $httpMethod = 'POST' ): mixed {
-        return $this->api($method, $data, $httpMethod);
-    }
-
-    public function file( string $path, ?string $name = null ): array {
-        return [
-            'tmp_name' => $path,
-            'name'     => $name ? : basename($path),
-        ];
-    }
-
-    public function __call( string $name, array $arguments ): mixed {
-        $data       = isset($arguments[0]) && is_array($arguments[0]) ? $arguments[0] : [];
-        $httpMethod = isset($arguments[1]) && is_string($arguments[1]) ? $arguments[1] : 'POST';
-
-        return $this->api($name, $data, $httpMethod);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait ForumTrait {
     public function getForumTopicIconStickers( array $data = [] ) {
         return $this->api('getForumTopicIconStickers', $data);
@@ -10,16 +12,16 @@ trait ForumTrait {
     public function createForumTopic( $chatIdOrData, $name = null, $iconColor = null, $iconCustomEmojiId = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('createForumTopic', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'name' => $name ];
-        $this->addOptional($data, 'icon_color', $iconColor);
-        $this->addOptional($data, 'icon_custom_emoji_id', $iconCustomEmojiId);
+        Arr::set($data, 'icon_color', $iconColor);
+        Arr::set($data, 'icon_custom_emoji_id', $iconCustomEmojiId);
         return $this->api('createForumTopic', $data);
     }
 
     public function editForumTopic( $chatIdOrData, $messageThreadId = null, $name = null, $iconCustomEmojiId = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('editForumTopic', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'message_thread_id' => $messageThreadId ];
-        $this->addOptional($data, 'name', $name);
-        $this->addOptional($data, 'icon_custom_emoji_id', $iconCustomEmojiId);
+        Arr::set($data, 'name', $name);
+        Arr::set($data, 'icon_custom_emoji_id', $iconCustomEmojiId);
         return $this->api('editForumTopic', $data);
     }
 

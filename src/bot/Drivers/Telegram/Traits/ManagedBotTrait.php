@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait ManagedBotTrait {
     public function getManagedBotToken( $userIdOrData ) {
         if ( is_array($userIdOrData) ) return $this->api('getManagedBotToken', $userIdOrData);
@@ -21,12 +23,11 @@ trait ManagedBotTrait {
     public function setManagedBotAccessSettings( $userIdOrData, $isAccessRestricted = null, $addedUserIds = null ) {
         if ( is_array($userIdOrData) ) return $this->api('setManagedBotAccessSettings', $userIdOrData);
         $data = [ 'user_id' => $userIdOrData, 'is_access_restricted' => $isAccessRestricted ];
-        $this->addOptional($data, 'added_user_ids', $addedUserIds);
+        Arr::set($data, 'added_user_ids', $addedUserIds);
         return $this->api('setManagedBotAccessSettings', $data);
     }
 
     public function getUserPersonalChatMessages( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('getUserPersonalChatMessages', $data);
+        return $this->apiFromArguments('getUserPersonalChatMessages', $args);
     }
 }

@@ -2,18 +2,20 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait VerificationTrait {
     public function verifyUser( $userIdOrData, $customDescription = null ) {
         if ( is_array($userIdOrData) ) return $this->api('verifyUser', $userIdOrData);
         $data = [ 'user_id' => $userIdOrData ];
-        $this->addOptional($data, 'custom_description', $customDescription);
+        Arr::set($data, 'custom_description', $customDescription);
         return $this->api('verifyUser', $data);
     }
 
     public function verifyChat( $chatIdOrData, $customDescription = null ) {
         if ( is_array($chatIdOrData) ) return $this->api('verifyChat', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData ];
-        $this->addOptional($data, 'custom_description', $customDescription);
+        Arr::set($data, 'custom_description', $customDescription);
         return $this->api('verifyChat', $data);
     }
 

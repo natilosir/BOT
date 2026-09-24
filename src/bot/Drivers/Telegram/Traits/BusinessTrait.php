@@ -4,97 +4,78 @@ namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
 trait BusinessTrait {
     public function getBusinessConnection( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('getBusinessConnection', $data);
+        return $this->apiFromArguments('getBusinessConnection', $args);
     }
 
     public function readBusinessMessage( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('readBusinessMessage', $data);
+        return $this->apiFromArguments('readBusinessMessage', $args);
     }
 
     public function deleteBusinessMessages( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('deleteBusinessMessages', $data);
+        return $this->apiFromArguments('deleteBusinessMessages', $args);
     }
 
     public function setBusinessAccountName( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setBusinessAccountName', $data);
+        return $this->apiFromArguments('setBusinessAccountName', $args);
     }
 
     public function setBusinessAccountUsername( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setBusinessAccountUsername', $data);
+        return $this->apiFromArguments('setBusinessAccountUsername', $args);
     }
 
     public function setBusinessAccountBio( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setBusinessAccountBio', $data);
+        return $this->apiFromArguments('setBusinessAccountBio', $args);
     }
 
     public function setBusinessAccountProfilePhoto( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setBusinessAccountProfilePhoto', $data);
+        return $this->apiFromArguments('setBusinessAccountProfilePhoto', $args);
     }
 
     public function removeBusinessAccountProfilePhoto( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('removeBusinessAccountProfilePhoto', $data);
+        return $this->apiFromArguments('removeBusinessAccountProfilePhoto', $args);
     }
 
     public function setBusinessAccountGiftSettings( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('setBusinessAccountGiftSettings', $data);
+        return $this->apiFromArguments('setBusinessAccountGiftSettings', $args);
     }
 
     public function getBusinessAccountStarBalance( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('getBusinessAccountStarBalance', $data);
+        return $this->apiFromArguments('getBusinessAccountStarBalance', $args);
     }
 
     public function transferBusinessAccountStars( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('transferBusinessAccountStars', $data);
+        return $this->apiFromArguments('transferBusinessAccountStars', $args);
     }
 
     public function getBusinessAccountGifts( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('getBusinessAccountGifts', $data);
+        return $this->apiFromArguments('getBusinessAccountGifts', $args);
     }
 
     public function convertGiftToStars( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('convertGiftToStars', $data);
+        return $this->apiFromArguments('convertGiftToStars', $args);
     }
 
     public function upgradeGift( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('upgradeGift', $data);
+        return $this->apiFromArguments('upgradeGift', $args);
     }
 
     public function transferGift( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('transferGift', $data);
+        return $this->apiFromArguments('transferGift', $args);
     }
 
     public function postStory( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('postStory', $data);
+        return $this->apiFromArguments('postStory', $args);
     }
 
     public function repostStory( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('repostStory', $data);
+        return $this->apiFromArguments('repostStory', $args);
     }
 
     public function editStory( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('editStory', $data);
+        return $this->apiFromArguments('editStory', $args);
     }
 
     public function deleteStory( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('deleteStory', $data);
+        return $this->apiFromArguments('deleteStory', $args);
     }
 }

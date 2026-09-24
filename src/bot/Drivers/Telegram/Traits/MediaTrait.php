@@ -2,6 +2,8 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
+use Illuminate\Support\Arr;
+
 trait MediaTrait {
     // Backward-compatible legacy method.
     public function sendPhoto( $chatID, $caption = null, $photo = null, $reply_to_message_id = null, $reply_markup = null ) {
@@ -72,8 +74,7 @@ trait MediaTrait {
     }
 
     public function sendPhotoRaw( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('sendPhoto', $data);
+        return $this->apiFromArguments('sendPhoto', $args);
     }
 
     public function sendAudio( $chatIdOrData, $audio = null, $caption = null, $parseMode = 'HTML', $replyMarkup = null, array $extra = [] ) {
@@ -99,18 +100,16 @@ trait MediaTrait {
     public function sendVideoNote( $chatIdOrData, $videoNote = null, $replyMarkup = null, array $extra = [] ) {
         if ( is_array($chatIdOrData) ) return $this->api('sendVideoNote', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'video_note' => $videoNote ];
-        $this->addOptional($data, 'reply_markup', $replyMarkup);
+        Arr::set($data, 'reply_markup', $replyMarkup);
         return $this->api('sendVideoNote', $this->withExtra($data, $extra));
     }
 
     public function sendLivePhoto( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('sendLivePhoto', $data);
+        return $this->apiFromArguments('sendLivePhoto', $args);
     }
 
     public function sendPaidMedia( ...$args ) {
-        $data = $this->buildApiData($args);
-        return $this->api('sendPaidMedia', $data);
+        return $this->apiFromArguments('sendPaidMedia', $args);
     }
 
     public function sendMediaGroup( $chatIdOrData, $media = null, array $extra = [] ) {
@@ -124,7 +123,7 @@ trait MediaTrait {
     public function sendSticker( $chatIdOrData, $sticker = null, $emoji = null, array $extra = [] ) {
         if ( is_array($chatIdOrData) ) return $this->api('sendSticker', $chatIdOrData);
         $data = [ 'chat_id' => $chatIdOrData, 'sticker' => $sticker ];
-        $this->addOptional($data, 'emoji', $emoji);
+        Arr::set($data, 'emoji', $emoji);
         return $this->api('sendSticker', $this->withExtra($data, $extra));
     }
 
@@ -132,9 +131,9 @@ trait MediaTrait {
         if ( is_array($chatIdOrData) ) return $this->api($method, $chatIdOrData);
 
         $data = [ 'chat_id' => $chatIdOrData, $mediaKey => $media ];
-        $this->addOptional($data, 'caption', $caption);
-        if ( $caption !== null ) $this->addOptional($data, 'parse_mode', $parseMode);
-        $this->addOptional($data, 'reply_markup', $replyMarkup);
+        Arr::set($data, 'caption', $caption);
+        if ( $caption !== null ) Arr::set($data, 'parse_mode', $parseMode);
+        Arr::set($data, 'reply_markup', $replyMarkup);
 
         return $this->api($method, $this->withExtra($data, $extra));
     }

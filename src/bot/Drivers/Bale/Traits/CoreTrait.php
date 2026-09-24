@@ -2,13 +2,15 @@
 
 namespace natilosir\bot\Bot\Drivers\Bale\Traits;
 
+use Illuminate\Support\Arr;
+
 trait CoreTrait {
     public function getUpdates( $offsetOrData = null, $limit = null, $timeout = null ): mixed {
         if ( is_array($offsetOrData) ) return $this->api('getUpdates', $offsetOrData);
         $data = [];
-        $this->addOptional($data, 'offset', $offsetOrData);
-        $this->addOptional($data, 'limit', $limit);
-        $this->addOptional($data, 'timeout', $timeout);
+        Arr::set($data, 'offset', $offsetOrData);
+        Arr::set($data, 'limit', $limit);
+        Arr::set($data, 'timeout', $timeout);
         return $this->api('getUpdates', $data);
     }
 

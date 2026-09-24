@@ -2,18 +2,9 @@
 
 namespace natilosir\bot\Bot\Drivers\Telegram\Traits;
 
-trait CoreTrait {
-    private function buildApiData( array $args ): array {
-        if ( isset($args[0]) && is_array($args[0]) ) {
-            return $args[0];
-        }
-        $data = [];
-        foreach ( $args as $i => $value ) {
-            $data["param_" . $i] = $value;
-        }
-        return $data;
-    }
+use Illuminate\Support\Arr;
 
+trait CoreTrait {
     public function getMe( array $data = [] ) {
         return $this->api('getMe', $data);
     }
@@ -32,10 +23,10 @@ trait CoreTrait {
         }
 
         $data = [];
-        $this->addOptional($data, 'offset', $offsetOrData);
-        $this->addOptional($data, 'limit', $limit);
-        $this->addOptional($data, 'timeout', $timeout);
-        $this->addOptional($data, 'allowed_updates', $allowedUpdates);
+        Arr::set($data, 'offset', $offsetOrData);
+        Arr::set($data, 'limit', $limit);
+        Arr::set($data, 'timeout', $timeout);
+        Arr::set($data, 'allowed_updates', $allowedUpdates);
 
         return $this->api('getUpdates', $data);
     }
@@ -58,12 +49,12 @@ trait CoreTrait {
         $configuredSecret = (string) $this->config('webhook.secret_token', '');
 
         $data = [ 'url' => $urlOrData ?? $configuredUrl ];
-        $this->addOptional($data, 'certificate', $certificate);
-        $this->addOptional($data, 'ip_address', $ipAddress);
-        $this->addOptional($data, 'max_connections', $maxConnections);
-        $this->addOptional($data, 'allowed_updates', $allowedUpdates);
-        $this->addOptional($data, 'drop_pending_updates', $dropPendingUpdates);
-        $this->addOptional($data, 'secret_token', $secretToken ?? ($configuredSecret !== '' ? $configuredSecret : null));
+        Arr::set($data, 'certificate', $certificate);
+        Arr::set($data, 'ip_address', $ipAddress);
+        Arr::set($data, 'max_connections', $maxConnections);
+        Arr::set($data, 'allowed_updates', $allowedUpdates);
+        Arr::set($data, 'drop_pending_updates', $dropPendingUpdates);
+        Arr::set($data, 'secret_token', $secretToken ?? ($configuredSecret !== '' ? $configuredSecret : null));
 
         return $this->api('setWebhook', $data);
     }
@@ -74,7 +65,7 @@ trait CoreTrait {
         }
 
         $data = [];
-        $this->addOptional($data, 'drop_pending_updates', $dropPendingUpdatesOrData);
+        Arr::set($data, 'drop_pending_updates', $dropPendingUpdatesOrData);
         return $this->api('deleteWebhook', $data);
     }
 
@@ -96,8 +87,8 @@ trait CoreTrait {
         }
 
         $data = [ 'user_id' => $userIdOrData ];
-        $this->addOptional($data, 'offset', $offset);
-        $this->addOptional($data, 'limit', $limit);
+        Arr::set($data, 'offset', $offset);
+        Arr::set($data, 'limit', $limit);
         return $this->api('getUserProfilePhotos', $data);
     }
 
@@ -108,8 +99,8 @@ trait CoreTrait {
         }
 
         $data = [ 'user_id' => $userIdOrData ];
-        $this->addOptional($data, 'offset', $offset);
-        $this->addOptional($data, 'limit', $limit);
+        Arr::set($data, 'offset', $offset);
+        Arr::set($data, 'limit', $limit);
         return $this->api('getUserProfileAudios', $data);
     }
 }

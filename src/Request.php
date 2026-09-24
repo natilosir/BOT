@@ -2,7 +2,7 @@
 
 namespace natilosir\bot;
 
-use natilosir\bot\Bot\DriverManager;
+use natilosir\bot\Bot\Manager\DriverManager;
 
 #[\AllowDynamicProperties]
 class Request {

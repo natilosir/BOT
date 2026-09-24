@@ -2,9 +2,13 @@
 
 namespace natilosir\bot\Bot\Manager;
 
+use Closure;
+use natilosir\bot\Bot\Client\BaleClient;
+use natilosir\bot\Bot\Client\TelegramClient;
 use natilosir\bot\Bot\Contracts\BotDriver;
 use natilosir\bot\Bot\Drivers\Bale\BaleDriver;
 use natilosir\bot\Bot\Drivers\Telegram\TelegramDriver;
+use RuntimeException;
 
 final class BotManager {
     public function __construct( private readonly DriverManager $drivers ) {}
@@ -13,24 +17,16 @@ final class BotManager {
         return $this->drivers->driver($name);
     }
 
-    /**
-     * Returns the concrete Telegram driver. PhpStorm can follow methods from
-     * this return type into the exact trait where they are implemented.
-     */
     public function telegram(): TelegramDriver {
         return $this->drivers->telegram();
     }
 
-    /**
-     * Returns the concrete Bale driver. PhpStorm can follow methods from this
-     * return type into the exact Bale trait implementation.
-     */
     public function bale(): BaleDriver {
         return $this->drivers->bale();
     }
 
     public function currentDriver(): BotDriver {
-        return $this->drivers->driver();
+        return $this->driver();
     }
 
     public function useDriver( string $name ): static {
@@ -43,16 +39,13 @@ final class BotManager {
     }
 
     public function supports( string $method ): bool {
-        return method_exists($this->driver(), $method);
+        $driver = $this->driver();
+
+        return method_exists($driver, $method) || $driver->supports($method);
     }
 
     public function api( string $method, array $data = [], string $httpMethod = 'POST' ): PendingCall {
-        return app(PendingCall::class, [
-            'driver'     => $this->driver(),
-            'method'     => $method,
-            'data'       => $data,
-            'httpMethod' => $httpMethod,
-        ]);
+        return $this->pendingCall($this->driver(), $method, $data, $httpMethod);
     }
 
     public function request( string $method, array $data = [], string $httpMethod = 'POST' ): PendingCall {
@@ -66,53 +59,69 @@ final class BotManager {
         ];
     }
 
-    /** @deprecated Prefer driver('telegram'). */
+    /** @deprecated Prefer telegram() or driver('telegram'). */
     public function TelegramClient(): TelegramClient {
         $driver = $this->drivers->driver('telegram');
 
         if ( !$driver instanceof TelegramClient ) {
-            throw new \RuntimeException('The telegram driver is not a TelegramClient instance.');
+            throw new RuntimeException('The telegram driver is not a TelegramClient instance.');
         }
 
         return $driver;
     }
 
-    /** @deprecated Prefer driver('bale'). */
+    /** @deprecated Prefer bale() or driver('bale'). */
     public function BaleClient(): BaleClient {
         $driver = $this->drivers->driver('bale');
 
         if ( !$driver instanceof BaleClient ) {
-            throw new \RuntimeException('The bale driver is not a BaleClient instance.');
+            throw new RuntimeException('The bale driver is not a BaleClient instance.');
         }
 
         return $driver;
     }
 
+    /**
+     * Route facade calls through the active driver without executing Bot API
+     * traffic immediately. Driver helper methods are allowed to build their
+     * payload normally; AbstractBotDriver captures the resulting API call and
+     * this manager turns it into a lazy PendingCall.
+     */
     public function __call( string $method, array $arguments ): mixed {
         $driver = $this->driver();
 
         if ( !method_exists($driver, $method) ) {
-            $data       = isset($arguments[0]) && is_array($arguments[0]) ? $arguments[0] : [];
-            $httpMethod = isset($arguments[1]) && is_string($arguments[1]) ? $arguments[1] : 'POST';
-            return new PendingCall($driver, $method, $data, $httpMethod);
+            return $this->pendingCall(
+                $driver,
+                $method,
+                isset($arguments[0]) && is_array($arguments[0]) ? $arguments[0] : [],
+                isset($arguments[1]) && is_string($arguments[1]) ? $arguments[1] : 'POST',
+            );
         }
 
         $driver->beginCapture();
+
         try {
             $returnValue = $driver->{$method}(...$arguments);
         } finally {
-            $captured = $driver->endCapture();
+            $capturedCall = $driver->endCapture();
         }
 
-        if ( $captured === null ) {
+        if ( $capturedCall === null ) {
             return $returnValue;
         }
 
-        return app(PendingCall::class, [
-            'driver'     => $driver,
-            'method'     => $captured['method'],
-            'data'       => $captured['data'],
-            'httpMethod' => $captured['httpMethod'],
-        ]);
+        return $this->pendingCall(
+            $driver,
+            $capturedCall['method'],
+            $capturedCall['data'],
+            $capturedCall['httpMethod'],
+            $capturedCall['executor'] ?? null,
+            $capturedCall['url'] ?? null,
+        );
+    }
+
+    private function pendingCall( BotDriver $driver, string $method, array $data = [], string $httpMethod = 'POST', ?Closure $executor = null, ?string $url = null ): PendingCall {
+        return new PendingCall($driver, $method, $data, strtoupper($httpMethod), $executor, $url,);
     }
 }

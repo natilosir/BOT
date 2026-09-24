@@ -4,6 +4,7 @@ namespace natilosir\bot\Bot\Manager;
 
 use Closure;
 use Illuminate\Http\Client\Factory;
+use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use LogicException;
 use natilosir\bot\Bot\Contracts\BotDriver;
@@ -14,20 +15,18 @@ use natilosir\bot\Bot\Webhook\WebhookDriverResolver;
 use natilosir\bot\Bot\Webhook\WebhookRequest;
 
 final class DriverManager {
-    private array  $drivers         = [];
-    private array  $extensions      = [];
-    private string $current;
-    private bool   $webhookResolved = false;
-
-    public function __construct( private readonly Factory $http, private ?array $config = null, private ?WebhookDriverResolver $webhookResolver = null, private ?BuiltInDriverFactory $builtInFactory = null ) {
-        $this->config          ??= (array) paths()->config('bot', []);
-        $this->webhookResolver ??= new WebhookDriverResolver();
-        $this->builtInFactory  ??= new BuiltInDriverFactory($this->http);
-        $this->current         = $this->defaultDriver();
+    public function __construct( private readonly Factory $http, private readonly array $config, private readonly ?WebhookDriverResolver $webhookResolver = null ) {
+        $this->builtInFactory = new BuiltInDriverFactory($this->http);
     }
 
+    private array                         $drivers         = [];
+    private array                         $extensions      = [];
+    private string                        $current         = '';
+    private bool                          $webhookResolved = false;
+    private readonly BuiltInDriverFactory $builtInFactory;
+
     public function defaultDriver(): string {
-        return strtolower((string) ( $this->config['default'] ?? $this->config['driver'] ?? 'telegram' ));
+        return $this->normalizeName((string) ( Arr::get($this->config, 'default') ?? Arr::get($this->config, 'driver') ?? 'telegram' ));
     }
 
     public function current(): string {
@@ -36,7 +35,8 @@ final class DriverManager {
     }
 
     public function use( string $name ): static {
-        $name = strtolower($name);
+        $name = $this->normalizeName($name);
+
         $this->driver($name, detectWebhook : false);
         $this->current         = $name;
         $this->webhookResolved = true;
@@ -46,32 +46,14 @@ final class DriverManager {
 
     public function driver( ?string $name = null, bool $detectWebhook = true ): BotDriver {
         if ( $name === null ) {
-            $name = $detectWebhook ? $this->current() : $this->current;
+            $name = $detectWebhook ? $this->current() : ( $this->current !== '' ? $this->current : $this->defaultDriver() );
         }
 
-        $name = strtolower($name);
+        $name = $this->normalizeName($name);
 
-        if ( isset($this->drivers[$name]) ) {
-            return $this->drivers[$name];
-        }
-
-        $config = $this->driverConfig($name);
-
-        if ( isset($this->extensions[$name]) ) {
-            $driver = ( $this->extensions[$name] )($this->http, $config, $this);
-            if ( !$driver instanceof BotDriver ) {
-                throw new InvalidArgumentException("Custom bot driver [{$name}] must implement " . BotDriver::class);
-            }
-
-            return $this->drivers[$name] = $driver;
-        }
-
-        return $this->drivers[$name] = $this->builtInFactory->make($name, $config);
+        return $this->drivers[$name] ??= $this->createDriver($name);
     }
 
-    /**
-     * Strongly typed Telegram accessor for IDE/static analysis.
-     */
     public function telegram(): TelegramDriver {
         $driver = $this->driver('telegram');
 
@@ -82,9 +64,6 @@ final class DriverManager {
         return $driver;
     }
 
-    /**
-     * Strongly typed Bale accessor for IDE/static analysis.
-     */
     public function bale(): BaleDriver {
         $driver = $this->driver('bale');
 
@@ -100,7 +79,8 @@ final class DriverManager {
     }
 
     public function extend( string $name, Closure $factory ): static {
-        $name                    = strtolower($name);
+        $name = $this->normalizeName($name);
+
         $this->extensions[$name] = $factory;
         unset($this->drivers[$name]);
 
@@ -108,7 +88,7 @@ final class DriverManager {
     }
 
     public function forget( string $name ): static {
-        unset($this->drivers[strtolower($name)]);
+        unset($this->drivers[$this->normalizeName($name)]);
         return $this;
     }
 
@@ -117,8 +97,25 @@ final class DriverManager {
     }
 
     public function configuredDriverNames(): array {
-        $drivers = $this->config['drivers'] ?? [];
-        return is_array($drivers) ? array_map('strtolower', array_keys($drivers)) : [];
+        $drivers = Arr::get($this->config, 'drivers', []);
+
+        return is_array($drivers) ? array_map(fn( string $name ): string => $this->normalizeName($name), array_keys($drivers)) : [];
+    }
+
+    private function createDriver( string $name ): BotDriver {
+        $config = $this->driverConfig($name);
+
+        if ( isset($this->extensions[$name]) ) {
+            $driver = ( $this->extensions[$name] )($this->http, $config, $this);
+
+            if ( !$driver instanceof BotDriver ) {
+                throw new InvalidArgumentException("Custom bot driver [{$name}] must implement " . BotDriver::class,);
+            }
+
+            return $driver;
+        }
+
+        return $this->builtInFactory->make($name, $config);
     }
 
     private function resolveWebhookContext(): void {
@@ -126,19 +123,23 @@ final class DriverManager {
             return;
         }
 
-        $detected = $this->detectWebhook();
-
-        if ( $detected !== null ) {
-            $this->current = $detected;
+        if ( ( $detected = $this->detectWebhook() ) !== null ) {
+            $this->current = $this->normalizeName($detected);
+        }
+        elseif ( $this->current === '' ) {
+            $this->current = $this->defaultDriver();
         }
 
         $this->webhookResolved = true;
     }
 
     private function driverConfig( string $name ): array {
-        $drivers = $this->config['drivers'] ?? [];
-        $config  = is_array($drivers) ? ( $drivers[$name] ?? [] ) : [];
+        $config = Arr::get($this->config, 'drivers.' . $this->normalizeName($name), []);
 
         return is_array($config) ? $config : [];
+    }
+
+    private function normalizeName( string $name ): string {
+        return strtolower(trim($name));
     }
 }
